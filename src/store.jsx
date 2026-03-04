@@ -5,7 +5,17 @@ import { configureStore, createSlice } from '@reduxjs/toolkit';
 function loadState() {
   try {
     const raw = localStorage.getItem('jordan_store');
-    return raw ? JSON.parse(raw) : undefined;
+    if (!raw) return undefined;
+    const parsed = JSON.parse(raw);
+
+    // Valid ids look like 'h1'..'h6' or 'w1'..'w18'
+    if (parsed?.wishlist?.ids) {
+      const hasStale = parsed.wishlist.ids.some(id => typeof id === 'number' || /^\d+$/.test(id));
+      if (hasStale) {
+        parsed.wishlist.ids = [];
+      }
+    }
+    return parsed;
   } catch {
     return undefined;
   }

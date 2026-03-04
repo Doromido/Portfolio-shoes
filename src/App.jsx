@@ -1,27 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   // wishlist
-  toggleWishlist, clearWishlist, setWishlistOpen,
-  selectWishlistIds, selectIsWishlisted, selectWishlistCount, selectWishlistOpen,
+  toggleWishlist, setWishlistOpen,
+  selectWishlistIds,
   // cart
   addToCart, removeFromCart, updateQty, setItemSize, clearCart, setCartOpen,
-  selectCartItems, selectCartOpen, selectCartCount, selectCartTotal,
+  selectCartItems, selectCartOpen, selectCartTotal,
 } from './store';
 import './App.css';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import WomenPage from './pages/Women';
+import WishlistDrawer from './wishlist-drawer';
 
 //Product catalogue
 const PRODUCTS = [
-  { id: 1, img: '/shoes/bs-1.png', name: 'Jordan Retro High OG',  price: 180, stars: 5, reviews: 124 },
-  { id: 2, img: '/shoes/bs-2.png', name: 'Jordan Air Max 200',     price: 160, stars: 5, reviews: 88  },
-  { id: 3, img: '/shoes/bs-3.png', name: 'Jordan Zion 2',          price: 140, sale: 200, badge: '-30%', stars: 4, reviews: 63 },
-  { id: 4, img: '/shoes/bs-4.png', name: 'Jordan Luka 1',          price: 120, stars: 5, reviews: 97  },
-  { id: 5, img: '/shoes/bs-5.png', name: 'Jordan Why Not .5',      price: 130, sale: 190, badge: '-32%', stars: 4, reviews: 75 },
-  { id: 6, img: '/shoes/bs-6.png', name: 'Jordan Stadium 90',      price: 110, stars: 5, reviews: 54  },
+  { id: 'w1', img: '/shoes/bs-1.png', name: 'Jordan Retro High OG',  price: 180, stars: 5, reviews: 124 },
+  { id: 'w2', img: '/shoes/bs-2.png', name: 'Jordan Air Max 200',     price: 160, stars: 5, reviews: 88  },
+  { id: 'w3', img: '/shoes/bs-3.png', name: 'Jordan Zion 2',          price: 140, sale: 200, badge: '-30%', stars: 4, reviews: 63 },
+  { id: 'h4', img: '/shoes/bs-4.png', name: 'Jordan Luka 1',          price: 120, stars: 5, reviews: 97  },
+  { id: 'w5', img: '/shoes/bs-5.png', name: 'Jordan Why Not .5',      price: 130, sale: 190, badge: '-32%', stars: 4, reviews: 75 },
+  { id: 'w6', img: '/shoes/bs-6.png', name: 'Jordan Stadium 90',      price: 110, stars: 5, reviews: 54  },
 ];
 
 //Icons
@@ -41,102 +42,6 @@ function CloseIcon({ size = 20 }) {
       <line x1="18" y1="6" x2="6" y2="18"/>
       <line x1="6" y1="6" x2="18" y2="18"/>
     </svg>
-  );
-}
-
-//Wishlist Drawer
-function WishlistDrawer({ onClose }) {
-  const dispatch  = useDispatch();
-  const wishIds   = useSelector(selectWishlistIds);
-  const cartItems = useSelector(selectCartItems);
-  const items     = PRODUCTS.filter(p => wishIds.includes(p.id));
-
-  useEffect(() => {
-    const h = (e) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
-  }, [onClose]);
-
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, []);
-
-  const handleAddToCart = (p) => {
-    dispatch(addToCart({ id: p.id, name: p.name, img: p.img, price: p.price }));
-  };
-
-  const isInCart = (id) => cartItems.some(i => i.id === id);
-
-  return (
-    <>
-      <div className="wl-backdrop" onClick={onClose} />
-      <aside className="wl-drawer">
-
-        <div className="wl-head">
-          <div className="wl-head-left">
-            <HeartIcon filled />
-            <span className="wl-title">WISHLIST</span>
-            <span className="wl-count">{items.length}</span>
-          </div>
-          <button className="wl-close" onClick={onClose}><CloseIcon /></button>
-        </div>
-
-        <div className="wl-rule" />
-
-        <div className="wl-list">
-          {items.length === 0 ? (
-            <div className="wl-empty">
-              <svg viewBox="0 0 24 24" width="40" height="40" stroke="currentColor"
-                fill="none" strokeWidth="1.5">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-              </svg>
-              <p>YOUR WISHLIST IS EMPTY</p>
-              <span>Tap ♥ on any shoe to save it here</span>
-            </div>
-          ) : items.map(p => (
-            <div className="wl-item" key={p.id}>
-              <div className="wl-item-img">
-                <img src={p.img} alt={p.name} />
-              </div>
-              <div className="wl-item-info">
-                <p className="wl-item-name">{p.name}</p>
-                <div className="wl-item-price-row">
-                  <span className="wl-item-price">${p.price}</span>
-                  {p.sale && <span className="wl-item-old">${p.sale}</span>}
-                  {p.badge && <span className="wl-item-badge">{p.badge}</span>}
-                </div>
-                <div className="wl-item-stars">
-                  {[1,2,3,4,5].map(i =>
-                    <span key={i} className={i <= p.stars ? 'star-on' : 'star-off'}>★</span>
-                  )}
-                  <span className="wl-item-reviews">({p.reviews})</span>
-                </div>
-                <button
-                  className={`wl-item-cart ${isInCart(p.id) ? 'in-cart' : ''}`}
-                  onClick={() => handleAddToCart(p)}
-                >
-                  {isInCart(p.id) ? '✓ IN CART' : 'ADD TO CART'}
-                </button>
-              </div>
-              <button className="wl-item-remove"
-                onClick={() => dispatch(toggleWishlist(p.id))}>
-                <CloseIcon size={14} />
-              </button>
-            </div>
-          ))}
-        </div>
-
-        {items.length > 0 && (
-          <div className="wl-footer">
-            <button className="wl-cart-all"
-              onClick={() => items.forEach(p => handleAddToCart(p))}>
-              ADD ALL TO CART
-            </button>
-          </div>
-        )}
-      </aside>
-    </>
   );
 }
 
@@ -275,7 +180,7 @@ function CartDrawer() {
 //Best Selling 
 const PER_PAGE = 4;
 
-function BestSelling() {
+function BestSelling({ onAddToCart }) {
   const dispatch   = useDispatch();
   const wishIds    = useSelector(selectWishlistIds);
   const [offset, setOffset] = useState(0);
@@ -292,7 +197,7 @@ function BestSelling() {
     <section className="best-selling">
       <div className="bs-header">
         <div className="bs-header-left">
-          <span className="bs-tagline">TOP PICKS / SEASON 2021</span>
+          <span className="bs-tagline">TOP PICKS / SEASON 2026</span>
           <h2 className="bs-title">BEST <span className="bs-accent">SELL</span>ING</h2>
         </div>
         <div className="bs-header-right">
@@ -337,9 +242,7 @@ function BestSelling() {
                   <img src={p.img} alt={p.name} className="bs-img" />
                   <div className="bs-cart-overlay">
                     <button className="bs-cart-btn"
-                      onClick={() => dispatch(addToCart({
-                        id: p.id, name: p.name, img: p.img, price: p.price
-                      }))}>
+                      onClick={() => onAddToCart({ id: p.id, name: p.name, img: p.img, price: p.price })}>
                       ADD TO CART
                     </button>
                   </div>
@@ -418,9 +321,22 @@ function Categories() {
 
 function HomePage() {
   const dispatch     = useDispatch();
-  const wishlistOpen = useSelector(selectWishlistOpen);
-
+  const wishlistIds  = useSelector(selectWishlistIds);
   const [selectedColor, setSelectedColor] = useState(0);
+  const [toast, setToast]           = useState(null);
+  const [toastHiding, setToastHiding] = useState(false);
+
+  const showToast = useCallback((p) => {
+    setToastHiding(false);
+    setToast({ name: p.name, img: p.img });
+    setTimeout(() => setToastHiding(true), 2500);
+    setTimeout(() => setToast(null), 2800);
+  }, []);
+
+  const handleAddToCart = useCallback((p) => {
+    dispatch(addToCart(p));
+    showToast(p);
+  }, [dispatch, showToast]);
 
   const colors = [
     { id: 0, name: 'Red',    shoe: '/shoes/1.png',   accent: '#ff0000', glow: 'rgba(255,0,0,0.3)',    glowPulse1: 'rgba(255,0,0,0.5)',   glowPulse2: 'rgba(255,0,0,0.8)' },
@@ -464,7 +380,7 @@ function HomePage() {
             <div className="bg-line bg-line-3"/>
           </div>
   
-          <div className="year-badge-top">2021 PF</div>
+          <div className="year-badge-top">2026 PF</div>
   
           <h1 className="shoe-label">
             <div className="jump-text">Jump</div>
@@ -490,14 +406,14 @@ function HomePage() {
               </div>
               <div className="button-group">
                 <button className="btn btn-primary"
-                  onClick={() => dispatch(addToCart({
+                  onClick={() => handleAddToCart({
                     id: `jumpman-${selectedColor}`,
-                    name: `Jordan Jumpman 2021 PF (${current.name})`,
+                    name: `Jordan Jumpman 2026 PF (${current.name})`,
                     img: current.shoe,
                     price: 134,
                     color: current.name,
                     accent: current.accent,
-                  }))}>
+                  })}>
                   ADD TO CART
                 </button>
                 <button className="btn btn-secondary">BUY NOW</button>
@@ -506,7 +422,7 @@ function HomePage() {
   
             <div className="right-section">
               <div className="shoe-display">
-                <img src={current.shoe} alt="Jordan Jumpman 2021 PF" className="shoe-image" />
+                <img src={current.shoe} alt="Jordan Jumpman 2026 PF" className="shoe-image" />
               </div>
             </div>
           </div>
@@ -514,7 +430,7 @@ function HomePage() {
           <div className="product-info">
             <span className="exclusive-badge">exclusive</span>
             <div className="product-name">JORDAN</div>
-            <div className="product-name">JUMPMAN 2021 PF</div>
+            <div className="product-name">JUMPMAN 2026 PF</div>
             <div className="price">134$</div>
           </div>
   
@@ -529,21 +445,36 @@ function HomePage() {
           </div>
         </section>
   
-        <BestSelling />
+        <BestSelling onAddToCart={handleAddToCart} />
         <Categories />
+
+      {toast && (
+        <div className={`home-toast ${toastHiding ? 'hiding' : ''}`}>
+          <img className="home-toast-img" src={toast.img} alt={toast.name} />
+          <div className="home-toast-body">
+            <span className="home-toast-label">✓ ADDED TO CART</span>
+            <span className="home-toast-name">{toast.name}</span>
+          </div>
+        </div>
+      )}
     </>
   );
 }
 
+// Scroll to top on every route change
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
+
 export default function App() {
-  const dispatch     = useDispatch();
-  const wishlistOpen = useSelector(selectWishlistOpen);
+  const dispatch = useDispatch();
 
   return (
     <div className="jordan-container">
-      {wishlistOpen && (
-        <WishlistDrawer onClose={() => dispatch(setWishlistOpen(false))} />
-      )}
+      <ScrollToTop />
+      <WishlistDrawer />
       <CartDrawer />
       <Header />
       <Routes>

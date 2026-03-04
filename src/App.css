@@ -38,7 +38,7 @@ body::-webkit-scrollbar {
   color: white;
 }
 
-/* Main section (hero) - fixed height*/
+/* Main section (hero)*/
 .hero-section {
   min-height: 100vh;
   position: relative;
@@ -180,7 +180,7 @@ body::-webkit-scrollbar {
   filter: contrast(1.2);
 }
 
-/* 2021 PF top right*/
+/* 2026 PF top right*/
 .year-badge-top {
   position: absolute;
   top: 28%;
@@ -1586,4 +1586,65 @@ body::-webkit-scrollbar {
   .bs-viewport {
     padding: 0 1.5rem;
   }
+}
+/* ─── HOME PAGE CART TOAST ─────────────────────────────────── */
+.home-toast {
+  position: fixed;
+  top: 5.5rem;
+  right: 2rem;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-top: 3px solid var(--accent);
+  padding: 1.2rem 2rem;
+  font-family: 'Space Mono', monospace;
+  color: white;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.6), 0 0 30px var(--glow);
+  animation: homeToastIn 0.35s cubic-bezier(0.4,0,0.2,1) both;
+  min-width: 300px;
+  max-width: 420px;
+}
+
+.home-toast.hiding {
+  animation: homeToastOut 0.3s cubic-bezier(0.4,0,0.2,1) both;
+}
+
+.home-toast-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  background: #111;
+  flex-shrink: 0;
+}
+
+.home-toast-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.home-toast-label {
+  font-size: 0.6rem;
+  letter-spacing: 3px;
+  color: var(--accent);
+}
+
+.home-toast-name {
+  font-size: 0.85rem;
+  color: white;
+  letter-spacing: 1px;
+  line-height: 1.3;
+}
+
+@keyframes homeToastIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes homeToastOut {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(20px); }
 }
