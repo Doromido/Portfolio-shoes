@@ -2,20 +2,22 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import {
-  // wishlist
-  toggleWishlist, setWishlistOpen,
+  toggleWishlist,
   selectWishlistIds,
-  // cart
-  addToCart, removeFromCart, updateQty, setItemSize, clearCart, setCartOpen,
-  selectCartItems, selectCartOpen, selectCartTotal,
+  addToCart, setCartOpen,
 } from './store';
 import './App.css';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import WomenPage from './pages/Women';
+import MenPage from './pages/Men';
+import KidsPage from './pages/Kids';
+import SalePage from './pages/Sale';
+import ProductNew from './pages/product-new';   
 import WishlistDrawer from './wishlist-drawer';
+import CartDrawer from './cart-drawer';
 
-//Product catalogue
+// Product catalogue
 const PRODUCTS = [
   { id: 'w1', img: '/shoes/bs-1.png', name: 'Jordan Retro High OG',  price: 180, stars: 5, reviews: 124 },
   { id: 'w2', img: '/shoes/bs-2.png', name: 'Jordan Air Max 200',     price: 160, stars: 5, reviews: 88  },
@@ -25,7 +27,6 @@ const PRODUCTS = [
   { id: 'w6', img: '/shoes/bs-6.png', name: 'Jordan Stadium 90',      price: 110, stars: 5, reviews: 54  },
 ];
 
-//Icons
 function HeartIcon({ filled = false }) {
   return (
     <svg viewBox="0 0 24 24" width="16" height="16"
@@ -35,154 +36,12 @@ function HeartIcon({ filled = false }) {
   );
 }
 
-function CloseIcon({ size = 20 }) {
-  return (
-    <svg viewBox="0 0 24 24" width={size} height={size} fill="none"
-      stroke="currentColor" strokeWidth="2" strokeLinecap="square">
-      <line x1="18" y1="6" x2="6" y2="18"/>
-      <line x1="6" y1="6" x2="18" y2="18"/>
-    </svg>
-  );
-}
-
-//Cart Drawer
-const SIZES = [36, 37, 38, 39, 40, 41];
-
-function CartDrawer() {
-  const dispatch = useDispatch();
-  const items    = useSelector(selectCartItems);
-  const total    = useSelector(selectCartTotal);
-  const open     = useSelector(selectCartOpen);
-
-  useEffect(() => {
-    const h = (e) => { if (e.key === 'Escape') dispatch(setCartOpen(false)); };
-    window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
-  }, [dispatch]);
-
-  useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [open]);
-
-  if (!open) return null;
-
-  return (
-    <>
-      <div className="wl-backdrop" onClick={() => dispatch(setCartOpen(false))} />
-      <aside className="wl-drawer cart-drawer">
-
-        <div className="wl-head">
-          <div className="wl-head-left">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
-              stroke="currentColor" strokeWidth="2">
-              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-            </svg>
-            <span className="wl-title">CART</span>
-            <span className="wl-count">{items.reduce((s, i) => s + i.qty, 0)}</span>
-          </div>
-          <button className="wl-close" onClick={() => dispatch(setCartOpen(false))}>
-            <CloseIcon />
-          </button>
-        </div>
-
-        <div className="wl-rule" />
-
-        <div className="wl-list">
-          {items.length === 0 ? (
-            <div className="wl-empty">
-              <svg viewBox="0 0 24 24" width="40" height="40" fill="none"
-                stroke="currentColor" strokeWidth="1.5">
-                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-              </svg>
-              <p>YOUR CART IS EMPTY</p>
-              <span>Add some shoes to get started</span>
-            </div>
-          ) : items.map(item => (
-            <div className="wl-item" key={`${item.id}-${item.color || 'default'}`}>
-
-              <div className="wl-item-img">
-                <img src={item.img} alt={item.name} />
-                {item.color && (
-                  <div className="cart-item-color-badge"
-                    style={{ background: item.accent }} title={item.color} />
-                )}
-              </div>
-
-              <div className="wl-item-info">
-                <p className="wl-item-name">{item.name}</p>
-                <span className="wl-item-price">${item.price}</span>
-
-                {/* Size selection */}
-                <div className="cart-size-row">
-                  <span className="cart-size-label">SIZE</span>
-                  <div className="cart-size-options">
-                    {SIZES.map(s => (
-                      <button
-                        key={s}
-                        className={`cart-size-btn ${item.size === s ? 'active' : ''}`}
-                        onClick={() => dispatch(setItemSize({
-                          id: item.id, color: item.color, size: s
-                        }))}
-                        type="button"
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Qty controls */}
-                <div className="cart-qty">
-                  <button className="cart-qty-btn"
-                    onClick={() => dispatch(updateQty({
-                      id: item.id, color: item.color, qty: item.qty - 1
-                    }))}>−</button>
-                  <span className="cart-qty-val">{item.qty}</span>
-                  <button className="cart-qty-btn"
-                    onClick={() => dispatch(updateQty({
-                      id: item.id, color: item.color, qty: item.qty + 1
-                    }))}>+</button>
-                </div>
-
-                <span className="cart-subtotal">
-                  Subtotal: <strong>${item.price * item.qty}</strong>
-                </span>
-              </div>
-
-              <button className="wl-item-remove"
-                onClick={() => dispatch(removeFromCart({ id: item.id, color: item.color }))}>
-                <CloseIcon size={14} />
-              </button>
-            </div>
-          ))}
-        </div>
-
-        {items.length > 0 && (
-          <div className="wl-footer">
-            <div className="cart-total">
-              <span>TOTAL</span>
-              <span className="cart-total-amount">${total}</span>
-            </div>
-            <button className="wl-cart-all">CHECKOUT →</button>
-            <button className="cart-clear" onClick={() => dispatch(clearCart())}>
-              Clear cart
-            </button>
-          </div>
-        )}
-      </aside>
-    </>
-  );
-}
-
-//Best Selling 
 const PER_PAGE = 4;
 
 function BestSelling({ onAddToCart }) {
   const dispatch   = useDispatch();
   const wishIds    = useSelector(selectWishlistIds);
+  const navigate   = useNavigate();
   const [offset, setOffset] = useState(0);
 
   const GAP    = 1.5;
@@ -273,15 +132,17 @@ function BestSelling({ onAddToCart }) {
           style={{ width: `${((offset + PER_PAGE) / PRODUCTS.length) * 100}%` }} />
       </div>
 
-      <button className="bs-shop-now-btn">SHOP NOW</button>
+      <button className="bs-shop-now-btn" onClick={() => {
+        const el = document.getElementById('categories-section');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }}>SHOP NOW</button>
     </section>
   );
 }
 
-//Categories Grid 
 const CATEGORIES = [
-  { label: 'MAN',   img: '/categories/man.jpg',   sub: 'New arrivals', pos: 'center 65%', path: '/men'   },
   { label: 'WOMEN', img: '/categories/women.jpg', sub: 'Latest drops',  pos: 'center 75%', path: '/women' },
+  { label: 'MAN',   img: '/categories/man.jpg',   sub: 'New arrivals', pos: 'center 65%', path: '/men'   },
   { label: 'KIDS',  img: '/categories/kids.png',  sub: 'Fresh styles',  pos: 'center 60%', path: '/kids'  },
   { label: 'SALE',  img: '/categories/sale.jpg',  sub: 'Up to -40%',   pos: 'center 40%', path: '/sale',  isSale: true },
 ];
@@ -289,7 +150,7 @@ const CATEGORIES = [
 function Categories() {
   const navigate = useNavigate();
   return (
-    <section className="cat-section">
+    <section className="cat-section" id="categories-section">
       <div className="cat-header">
         <span className="cat-tagline">EXPLORE / COLLECTIONS</span>
         <h2 className="cat-title">SHOP BY <span className="cat-accent">CATEGORY</span></h2>
@@ -320,6 +181,7 @@ function Categories() {
 }
 
 function HomePage() {
+  const navigate     = useNavigate();         
   const dispatch     = useDispatch();
   const wishlistIds  = useSelector(selectWishlistIds);
   const [selectedColor, setSelectedColor] = useState(0);
@@ -363,90 +225,96 @@ function HomePage() {
     root.style.setProperty('--cart-filter', hexToFilter(current.accent));
   }, [selectedColor]);
 
+  const handleBuyNow = () => {
+    navigate('/product', { state: { colorId: selectedColor } });
+  };
+
   return (
     <>
-      {/* Hero */}
-        <section className="hero-section">
-          <svg className="bg-jordan-text" viewBox="0 0 1000 200"
-            preserveAspectRatio="none" aria-hidden="true">
-            <text x="500" y="175" textAnchor="middle"
-              fontFamily="'Archivo Black', sans-serif" fontWeight="900"
-              fontSize="210" fill="#1a1a1a" letterSpacing="-2">JORDAN</text>
-          </svg>
-  
-          <div className="bg-decoration">
-            <div className="bg-line bg-line-1"/>
-            <div className="bg-line bg-line-2"/>
-            <div className="bg-line bg-line-3"/>
-          </div>
-  
-          <div className="year-badge-top">2026 PF</div>
-  
-          <h1 className="shoe-label">
-            <div className="jump-text">Jump</div>
-            <div className="man-text">man</div>
-          </h1>
-  
-          <p className="subtitle subtitle-left">Basketball</p>
-          <p className="subtitle subtitle-right">Shoes</p>
-  
-          <div className="main-content">
-            <div className="left-section">
-              <div className="color-selector">
-                <div className="color-label">CHOOSE COLOR :</div>
-                <div className="color-options">
-                  {colors.map((color) => (
-                    <div key={color.id}
-                      className={`color-option ${selectedColor === color.id ? 'active' : ''}`}
-                      onClick={() => setSelectedColor(color.id)}>
-                      <img src={color.shoe} alt={`Color ${color.name}`} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="button-group">
-                <button className="btn btn-primary"
-                  onClick={() => handleAddToCart({
-                    id: `jumpman-${selectedColor}`,
-                    name: `Jordan Jumpman 2026 PF (${current.name})`,
-                    img: current.shoe,
-                    price: 134,
-                    color: current.name,
-                    accent: current.accent,
-                  })}>
-                  ADD TO CART
-                </button>
-                <button className="btn btn-secondary">BUY NOW</button>
+      <section className="hero-section">
+        <svg className="bg-jordan-text" viewBox="0 0 1000 200"
+          preserveAspectRatio="none" aria-hidden="true">
+          <text x="500" y="175" textAnchor="middle"
+            fontFamily="'Archivo Black', sans-serif" fontWeight="900"
+            fontSize="210" fill="#1a1a1a" letterSpacing="-2">JORDAN</text>
+        </svg>
+
+        <div className="bg-decoration">
+          <div className="bg-line bg-line-1"/>
+          <div className="bg-line bg-line-2"/>
+          <div className="bg-line bg-line-3"/>
+        </div>
+
+        <div className="year-badge-top">2026 PF</div>
+
+        <h1 className="shoe-label">
+          <div className="jump-text">Jump</div>
+          <div className="man-text">man</div>
+        </h1>
+
+        <p className="subtitle subtitle-left">Basketball</p>
+        <p className="subtitle subtitle-right">Shoes</p>
+
+        <div className="main-content">
+          <div className="left-section">
+            <div className="color-selector">
+              <div className="color-label">CHOOSE COLOR :</div>
+              <div className="color-options">
+                {colors.map((color) => (
+                  <div key={color.id}
+                    className={`color-option ${selectedColor === color.id ? 'active' : ''}`}
+                    onClick={() => setSelectedColor(color.id)}>
+                    <img src={color.shoe} alt={`Color ${color.name}`} />
+                  </div>
+                ))}
               </div>
             </div>
-  
-            <div className="right-section">
-              <div className="shoe-display">
-                <img src={current.shoe} alt="Jordan Jumpman 2026 PF" className="shoe-image" />
-              </div>
+            <div className="button-group">
+              <button className="btn btn-primary"
+                onClick={() => handleAddToCart({
+                  id: `jumpman-${selectedColor}`,
+                  name: `Jordan Jumpman 2026 PF (${current.name})`,
+                  img: current.shoe,
+                  price: 134,
+                  color: current.name,
+                  accent: current.accent,
+                })}>
+                ADD TO CART
+              </button>
+              {/* BUY NOW navigates to product detail page */}
+              <button className="btn btn-secondary" onClick={handleBuyNow}>
+                BUY NOW
+              </button>
             </div>
           </div>
-  
-          <div className="product-info">
-            <span className="exclusive-badge">exclusive</span>
-            <div className="product-name">JORDAN</div>
-            <div className="product-name">JUMPMAN 2026 PF</div>
-            <div className="price">134$</div>
+
+          <div className="right-section">
+            <div className="shoe-display">
+              <img src={current.shoe} alt="Jordan Jumpman 2026 PF" className="shoe-image" />
+            </div>
           </div>
-  
-          <div className="pagination">
-            {colors.map((color) => (
-              <div key={color.id}
-                className={`dot ${selectedColor === color.id ? 'active' : ''}`}
-                style={selectedColor === color.id ? { background: color.accent } : {}}
-                onClick={() => setSelectedColor(color.id)}
-              />
-            ))}
-          </div>
-        </section>
-  
-        <BestSelling onAddToCart={handleAddToCart} />
-        <Categories />
+        </div>
+
+        <div className="product-info">
+          <span className="exclusive-badge">exclusive</span>
+          <div className="product-name">JORDAN</div>
+          <div className="product-name">JUMPMAN 2026 PF</div>
+          <div className="price">134$</div>
+        </div>
+
+        <div className="pagination">
+          {colors.map((color) => (
+            <div key={color.id}
+              className={`dot ${selectedColor === color.id ? 'active' : ''}`}
+              style={selectedColor === color.id ? { background: color.accent } : {}}
+              onClick={() => setSelectedColor(color.id)}
+            />
+          ))}
+        </div>
+      </section>
+
+      <BestSelling onAddToCart={handleAddToCart} />
+      <Categories />
 
       {toast && (
         <div className={`home-toast ${toastHiding ? 'hiding' : ''}`}>
@@ -461,7 +329,6 @@ function HomePage() {
   );
 }
 
-// Scroll to top on every route change
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
@@ -469,8 +336,6 @@ function ScrollToTop() {
 }
 
 export default function App() {
-  const dispatch = useDispatch();
-
   return (
     <div className="jordan-container">
       <ScrollToTop />
@@ -478,11 +343,12 @@ export default function App() {
       <CartDrawer />
       <Header />
       <Routes>
-        <Route path="/"      element={<HomePage />} />
-        <Route path="/women" element={<WomenPage />} />
-        <Route path="/men"   element={<div style={{padding:'200px 4rem',color:'white',fontFamily:'Space Mono',minHeight:'100vh',background:'#0a0a0a'}}>MEN — COMING SOON</div>} />
-        <Route path="/kids"  element={<div style={{padding:'200px 4rem',color:'white',fontFamily:'Space Mono',minHeight:'100vh',background:'#0a0a0a'}}>KIDS — COMING SOON</div>} />
-        <Route path="/sale"  element={<div style={{padding:'200px 4rem',color:'white',fontFamily:'Space Mono',minHeight:'100vh',background:'#0a0a0a'}}>SALE — COMING SOON</div>} />
+        <Route path="/"        element={<HomePage />} />
+        <Route path="/product" element={<ProductNew />} />   
+        <Route path="/women"   element={<WomenPage />} />
+        <Route path="/men"     element={<MenPage />} />
+        <Route path="/kids"    element={<KidsPage />} />
+        <Route path="/sale"    element={<SalePage />} />
       </Routes>
       <Footer />
     </div>
