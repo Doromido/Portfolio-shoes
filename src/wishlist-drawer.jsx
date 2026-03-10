@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   toggleWishlist,
@@ -9,18 +9,33 @@ import {
   selectCartItems,
 } from './store';
 import { WOMEN_PRODUCTS } from './pages/W-products.js';
+import { MEN_PRODUCTS } from './pages/M-products.js';
+import { KIDS_PRODUCTS } from './pages/K-products.js';
 
-// HOME-only products (not present in Women catalogue)
+// HOME-only product
 const HOME_ONLY = [
   { id: 'h4', img: '/shoes/bs-4.png', name: 'Jordan Luka 1', price: 120, stars: 5, reviews: 97 },
+];
+
+// Jumpman 2026 PF — ProductPage colors (ids match productId = `jumpman-${colorIdx}`)
+const JUMPMAN_PRODUCTS = [
+  { id: 'jumpman-0', img: '/shoes/1.png',   name: 'Jordan Jumpman 2026 PF — Red',    price: 134, stars: 5, reviews: 124 },
+  { id: 'jumpman-1', img: '/shoes/s-y.png', name: 'Jordan Jumpman 2026 PF — Yellow', price: 134, stars: 5, reviews: 124 },
+  { id: 'jumpman-2', img: '/shoes/s-v.png', name: 'Jordan Jumpman 2026 PF — Purple', price: 134, stars: 5, reviews: 124 },
+  { id: 'jumpman-3', img: '/shoes/s-g.png', name: 'Jordan Jumpman 2026 PF — Green',  price: 134, stars: 5, reviews: 124 },
 ];
 
 // WOMEN catalogue (covers w1–w18, includes shared models w1–w6)
 const WOMEN_NORMALISED = WOMEN_PRODUCTS.map(p => ({ ...p, id: `w${p.id}` }));
 
+// MEN catalogue (covers m1–m18)
+const MEN_NORMALISED = MEN_PRODUCTS.map(p => ({ ...p, id: `m${p.id}` }));
+
+// KIDS catalogue — ids already have 'k' prefix (k1–k18)
+const KIDS_NORMALISED = KIDS_PRODUCTS.map(p => ({ ...p }));
+
 // Unified catalogue 
-// Home shared models (w1,w2,w3,w5,w6) resolve via WOMEN_NORMALISED — no duplicates
-const ALL_PRODUCTS = [...HOME_ONLY, ...WOMEN_NORMALISED];
+const ALL_PRODUCTS = [...HOME_ONLY, ...JUMPMAN_PRODUCTS, ...WOMEN_NORMALISED, ...MEN_NORMALISED, ...KIDS_NORMALISED];
 
 // Icons 
 function HeartIcon({ filled = false }) {
@@ -48,15 +63,31 @@ export default function WishlistDrawer() {
   const open      = useSelector(selectWishlistOpen);
   const wishIds   = useSelector(selectWishlistIds);
   const cartItems = useSelector(selectCartItems);
+  const [visible, setVisible] = useState(false);
+  const [closing, setClosing] = useState(false);
+
+  // When store opens the drawer
+  useEffect(() => {
+    if (open) {
+      setClosing(false);
+      setVisible(true);
+    } else if (visible) {
+      setClosing(true);
+      const t = setTimeout(() => {
+        setVisible(false);
+        setClosing(false);
+      }, 320);
+      return () => clearTimeout(t);
+    }
+  }, [open]);
 
   const onClose = () => dispatch(setWishlistOpen(false));
 
   // Items currently in the wishlist
   const items = ALL_PRODUCTS.filter(p => wishIds.includes(p.id));
 
-  // Keyboard + scroll lock
   useEffect(() => {
-    if (!open) return;
+    if (!visible) return;
     const h = (e) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', h);
     document.body.style.overflow = 'hidden';
@@ -64,17 +95,17 @@ export default function WishlistDrawer() {
       window.removeEventListener('keydown', h);
       document.body.style.overflow = '';
     };
-  }, [open]);
+  }, [visible]);
 
-  const isInCart   = (id) => cartItems.some(i => i.id === id);
+  const isInCart   = (id) => cartItems.some(i => i.id === id || i.id.startsWith(id + '-'));
   const handleAdd  = (p)  => dispatch(addToCart({ id: p.id, name: p.name, img: p.img, price: p.price }));
 
-  if (!open) return null;
+  if (!visible) return null;
 
   return (
     <>
-      <div className="wl-backdrop" onClick={onClose} />
-      <aside className="wl-drawer">
+      <div className={`wl-backdrop ${closing ? 'closing' : ''}`} onClick={onClose} />
+      <aside className={`wl-drawer ${closing ? 'closing' : ''}`}>
 
         <div className="wl-head">
           <div className="wl-head-left">
