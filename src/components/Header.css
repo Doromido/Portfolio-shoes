@@ -212,7 +212,6 @@
 
 /* WISHLIST NAV BUTTON */
 
-
 .wishlist-nav-btn {
   position: relative;
 }
@@ -272,4 +271,23 @@
   .navbar {
     padding: 1.5rem 2rem;
   }
+}
+
+/* Drawer exit animations */
+.wl-drawer.closing {
+  animation: slideToRight 0.32s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.wl-backdrop.closing {
+  animation: fadeOut 0.32s ease forwards;
+}
+
+@keyframes slideToRight {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
 }

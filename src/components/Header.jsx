@@ -10,6 +10,8 @@ import {
   selectCartCount,
   selectCartOpen,
 } from '../store';
+import LoginModal from './Login-modal';
+import ProfileDropdown from './Profile-drop-down';
 
 export default function Header() {
   const dispatch      = useDispatch();
@@ -18,10 +20,29 @@ export default function Header() {
   const cartCount     = useSelector(selectCartCount);
   const cartOpen      = useSelector(selectCartOpen);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [loginOpen, setLoginOpen]   = useState(false);
+  // Reading saved session on load
+  const [user, setUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem('jordan_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch { return null; }
+  });
   const location = useLocation();
   const isActive = (path) => location.pathname === path;
 
+  const handleLogin = (userData) => {
+    setUser(userData);
+    setLoginOpen(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('jordan_user');
+    setUser(null);
+  };
+
   return (
+    <>
     <nav className="navbar">
       <div className="logo-section">
         <img src="/logo.png" alt="Logo" />
@@ -55,7 +76,10 @@ export default function Header() {
         {/* Wishlist */}
         <button
           className={`icon-btn wishlist-nav-btn ${wishCount > 0 ? 'has-items' : ''}`}
-          onClick={() => dispatch(setWishlistOpen(!wishOpen))}
+          onClick={() => {
+            dispatch(setCartOpen(false));
+            dispatch(setWishlistOpen(!wishOpen));
+          }}
           aria-label="Toggle wishlist"
         >
           <svg viewBox="0 0 24 24" width="26" height="26"
@@ -72,7 +96,10 @@ export default function Header() {
         {/* Cart */}
         <button
           className={`icon-btn cart-nav-btn ${cartCount > 0 ? 'has-items' : ''}`}
-          onClick={() => dispatch(setCartOpen(!cartOpen))}
+          onClick={() => {
+            dispatch(setWishlistOpen(false));
+            dispatch(setCartOpen(!cartOpen));
+          }}
           aria-label="Toggle cart"
         >
           <img src="/cart.png" alt="Cart" />
@@ -81,10 +108,21 @@ export default function Header() {
           )}
         </button>
 
-        <div className="profile-icon">
-          <img src="/avatar.png" alt="Profile" />
-        </div>
+        {user ? (
+          <ProfileDropdown user={user} onLogout={handleLogout} />
+        ) : (
+          <div className="profile-icon" onClick={() => setLoginOpen(true)}>
+            <img src="/avatar.png" alt="Profile" />
+          </div>
+        )}
       </div>
     </nav>
+
+    <LoginModal
+      isOpen={loginOpen}
+      onClose={() => setLoginOpen(false)}
+      onLogin={handleLogin}
+    />
+    </>
   );
 }
