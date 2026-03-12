@@ -13,16 +13,32 @@ import WomenPage from './pages/Women';
 import MenPage from './pages/Men';
 import KidsPage from './pages/Kids';
 import SalePage from './pages/Sale';
-import ProductNew from './pages/product-new';   
+import ProductNew from './pages/Product-new';
+import ProductPage from './pages/Product-page';
 import WishlistDrawer from './wishlist-drawer';
 import CartDrawer from './cart-drawer';
+import CheckoutPage from './Checkout';
+import SizeGuidePage from './pages/SizeGuide';
 
 // Product catalogue
 const PRODUCTS = [
   { id: 'w1', img: '/shoes/bs-1.png', name: 'Jordan Retro High OG',  price: 180, stars: 5, reviews: 124 },
   { id: 'w2', img: '/shoes/bs-2.png', name: 'Jordan Air Max 200',     price: 160, stars: 5, reviews: 88  },
   { id: 'w3', img: '/shoes/bs-3.png', name: 'Jordan Zion 2',          price: 140, sale: 200, badge: '-30%', stars: 4, reviews: 63 },
-  { id: 'h4', img: '/shoes/bs-4.png', name: 'Jordan Luka 1',          price: 120, stars: 5, reviews: 97  },
+  {
+    id: 'h4',
+    img: '/shoes/bs-4.png',
+    name: 'Jordan Luka 1',
+    sub: "MEN'S SHOES",
+    price: 120,
+    stars: 5,
+    reviews: 97,
+    badge: null,
+    category: 'PERFORMANCE',
+    colorways: ['Black/Electric Blue/Iridescent Purple/Ice'],
+    sizes: ['36','37','38','39','40','41','42'],
+    description: 'Built for the next generation of court visionaries, the Jordan Luka 1 fuses aggressive aesthetics with elite performance engineering. The reinforced black textile upper is structured around a bold molded exoskeleton that channels lateral forces for unmatched lockdown during sharp cuts and crossovers. Iridescent purple and electric blue geometric cutouts catch the light with every move, while the "FLIGHT" branding on the lateral heel makes a statement as loud as the game itself. Beneath, a full-length translucent Air Max cushioning unit glows with a cool blue hue, delivering explosive impact protection across the entire footstrike. The icy crystalline outsole features a multi-directional traction pattern engineered for hard court dominance.',
+  },
   { id: 'w5', img: '/shoes/bs-5.png', name: 'Jordan Why Not .5',      price: 130, sale: 190, badge: '-32%', stars: 4, reviews: 75 },
   { id: 'w6', img: '/shoes/bs-6.png', name: 'Jordan Stadium 90',      price: 110, stars: 5, reviews: 54  },
 ];
@@ -38,11 +54,10 @@ function HeartIcon({ filled = false }) {
 
 const PER_PAGE = 4;
 
-function BestSelling({ onAddToCart }) {
+function BestSelling({ onAddToCart, offset, setOffset }) {
   const dispatch   = useDispatch();
   const wishIds    = useSelector(selectWishlistIds);
   const navigate   = useNavigate();
-  const [offset, setOffset] = useState(0);
 
   const GAP    = 1.5;
   const maxOff = PRODUCTS.length - PER_PAGE;
@@ -90,24 +105,26 @@ function BestSelling({ onAddToCart }) {
             return (
               <div className="bs-card" key={p.id}
                 style={{ width: `calc(25% - ${GAP * (PER_PAGE - 1) / PER_PAGE}rem)` }}>
-                <div className="bs-img-wrap">
+                <div className="bs-img-wrap" style={{ cursor: 'pointer' }}
+                  onClick={() => navigate(`/product/${p.id}`, { state: { fallbackProduct: { ...p, _source: 'women' }, returnTo: '/', scrollY: window.scrollY, bsOffset: offset } })}>
                   {p.badge && <span className="bs-badge">{p.badge}</span>}
                   <button
                     className={`bs-heart ${isLiked ? 'liked' : ''}`}
-                    onClick={() => dispatch(toggleWishlist(p.id))}
+                    onClick={(e) => { e.stopPropagation(); dispatch(toggleWishlist(p.id)); }}
                   >
                     <HeartIcon filled={isLiked} />
                   </button>
                   <img src={p.img} alt={p.name} className="bs-img" />
                   <div className="bs-cart-overlay">
                     <button className="bs-cart-btn"
-                      onClick={() => onAddToCart({ id: p.id, name: p.name, img: p.img, price: p.price })}>
+                      onClick={(e) => { e.stopPropagation(); onAddToCart({ id: p.id, name: p.name, img: p.img, price: p.price }); }}>
                       ADD TO CART
                     </button>
                   </div>
                 </div>
                 <div className="bs-info">
-                  <p className="bs-name">{p.name}</p>
+                  <p className="bs-name" style={{ cursor: 'pointer' }}
+                    onClick={() => navigate(`/product/${p.id}`, { state: { fallbackProduct: { ...p, _source: 'women' }, returnTo: '/', scrollY: window.scrollY, bsOffset: offset } })}>{p.name}</p>
                   <div className="bs-price-row">
                     <span className="bs-price">${p.price}</span>
                     {p.sale && <span className="bs-old">${p.sale}</span>}
@@ -160,7 +177,7 @@ function Categories() {
           <div
             key={cat.label}
             className={`cat-item ${cat.isSale ? 'cat-item--sale' : ''}`}
-            onClick={() => navigate(cat.path)}
+            onClick={() => navigate(cat.path, { state: { scrollToTop: true } })}
             style={{ cursor: 'pointer' }}
           >
             <img src={cat.img} alt={cat.label} className="cat-img"
@@ -183,10 +200,12 @@ function Categories() {
 function HomePage() {
   const navigate     = useNavigate();         
   const dispatch     = useDispatch();
+  const location     = useLocation();
   const wishlistIds  = useSelector(selectWishlistIds);
   const [selectedColor, setSelectedColor] = useState(0);
   const [toast, setToast]           = useState(null);
   const [toastHiding, setToastHiding] = useState(false);
+  const [bsOffset, setBsOffset]     = useState(() => location.state?.bsOffset ?? 0);
 
   const showToast = useCallback((p) => {
     setToastHiding(false);
@@ -313,7 +332,7 @@ function HomePage() {
         </div>
       </section>
 
-      <BestSelling onAddToCart={handleAddToCart} />
+      <BestSelling onAddToCart={handleAddToCart} offset={bsOffset} setOffset={setBsOffset} />
       <Categories />
 
       {toast && (
@@ -329,9 +348,30 @@ function HomePage() {
   );
 }
 
+// Pages that manage their own scroll restoration via usePageState
+const CATALOGUE_PAGES = ['/women', '/men', '/kids', '/sale'];
+
 function ScrollToTop() {
-  const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  const { pathname, state } = useLocation();
+
+  useEffect(() => {
+    // For catalogue pages: scroll to top only if navigated with scrollToTop flag (e.g. from Categories)
+    if (CATALOGUE_PAGES.includes(pathname)) {
+      if (state?.scrollToTop) window.scrollTo(0, 0);
+      return;
+    }
+
+    // If returning to home with a saved scroll position — restore it
+    if (pathname === '/' && state?.scrollY != null) {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: state.scrollY, behavior: 'instant' });
+      });
+      return;
+    }
+
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
   return null;
 }
 
@@ -344,11 +384,14 @@ export default function App() {
       <Header />
       <Routes>
         <Route path="/"        element={<HomePage />} />
-        <Route path="/product" element={<ProductNew />} />   
+        <Route path="/product"     element={<ProductNew />} />
+        <Route path="/product/:id" element={<ProductPage />} />
         <Route path="/women"   element={<WomenPage />} />
         <Route path="/men"     element={<MenPage />} />
         <Route path="/kids"    element={<KidsPage />} />
         <Route path="/sale"    element={<SalePage />} />
+        <Route path="/checkout"    element={<CheckoutPage />} />
+        <Route path="/size-guide"  element={<SizeGuidePage />} />
       </Routes>
       <Footer />
     </div>
