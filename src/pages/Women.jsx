@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { WOMEN_PRODUCTS, FILTERS } from './W-products.js';
 import {
   toggleWishlist,
@@ -20,10 +20,22 @@ const HeartIcon = ({ filled }) => (
 export default function WomenPage() {
   const [activeFilter, setActiveFilter] = useState('ALL');
   const navigate = useNavigate();
+  const location = useLocation();
   const [toast, setToast] = useState(null); // { name, img }
   const [toastHiding, setToastHiding] = useState(false);
   const dispatch = useDispatch();
   const wishlistIds = useSelector(state => state.wishlist.ids);
+  const scrollRestored = useRef(false);
+
+  // Restore scroll position when returning from product page
+  useEffect(() => {
+    if (!scrollRestored.current && location.state?.scrollY != null) {
+      scrollRestored.current = true;
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: location.state.scrollY, behavior: 'instant' });
+      });
+    }
+  }, []);
 
   const handleToggleWishlist = (e, id) => {
     e.stopPropagation();
@@ -70,7 +82,7 @@ export default function WomenPage() {
             </p>
             <div className="wp-hero-cta-row">
               <button className="wp-btn-primary" onClick={() => document.querySelector('.wp-products').scrollIntoView({ behavior: 'smooth' })}>SHOP NOW</button>
-              <button className="wp-btn-ghost">VIEW LOOKBOOK ↗</button>
+              <button className="wp-btn-ghost" onClick={() => document.getElementById('editorial-bottom').scrollIntoView({ behavior: 'smooth' })}>VIEW SALE ↗</button>
             </div>
           </div>
         </div>
@@ -140,7 +152,8 @@ export default function WomenPage() {
             const liked = wishlistIds.includes(p.id);
             return (
               <div key={p.id} className="bs-card wc-card">
-                <div className="bs-img-wrap">
+                <div className="bs-img-wrap" style={{ cursor: 'pointer' }}
+                  onClick={() => navigate(`/product/${p.id}`, { state: { returnTo: '/women', scrollY: window.scrollY } })}>
                   {p.badge && <span className="bs-badge">{p.badge}</span>}
                   <button
                     className={`bs-heart ${liked ? 'liked' : ''}`}
@@ -157,7 +170,8 @@ export default function WomenPage() {
                   </div>
                 </div>
                 <div className="bs-info">
-                  <p className="bs-name">{p.name}</p>
+                  <p className="bs-name" style={{ cursor: 'pointer' }}
+                    onClick={() => navigate(`/product/${p.id}`, { state: { returnTo: '/women', scrollY: window.scrollY } })}>{p.name}</p>
                   <div className="bs-price-row">
                     <span className="bs-price">${p.price}</span>
                     <span className="wc-colors">{p.colorways.length} COLORS</span>
@@ -170,7 +184,7 @@ export default function WomenPage() {
       </section>
 
       {/* EDITORIAL BOTTOM */}
-      <section className="wp-editorial-bottom">
+      <section className="wp-editorial-bottom" id="editorial-bottom">
         <div className="wp-ed-img-wrap">
           <img src="/categories/sale.jpg" alt="Her Game" />
           <div className="wp-ed-img-overlay" />
@@ -194,8 +208,7 @@ export default function WomenPage() {
             ))}
           </div>
           <div className="wp-ed-cta-row">
-            <button className="wp-btn-primary" onClick={() => navigate('/sale')}>SEE WHAT'S ON SALE →</button>
-            <button className="wp-ed-link">VIEW LOOKBOOK ↗</button>
+            <button className="wp-btn-primary" onClick={() => navigate('/sale', { state: { scrollToTop: true } })}>SEE WHAT'S ON SALE →</button>
           </div>
         </div>
       </section>
@@ -234,7 +247,7 @@ export default function WomenPage() {
               </div>
             ))}
           </div>
-          <button className="wp-btn-ghost">SIZE GUIDE →</button>
+          <button className="wp-btn-ghost" onClick={() => navigate('/size-guide', { state: { gender: 'women', returnTo: '/women' } })}>SIZE GUIDE →</button>
         </div>
       </section>
 
