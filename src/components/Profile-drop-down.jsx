@@ -1,18 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectActiveOrders } from '../store';
+import OrdersModal from './Orders-modal';
 import './Profile-drop-down.css';
 
-/* ── Модалка налаштувань ─────────────────────────────────── */
+/* Settings modal*/
 function SettingsModal({ user, onClose, onSave }) {
-  const [tab, setTab]           = useState('name'); // 'name' | 'email' | 'password'
-  const [name, setName]         = useState(user.name);
-  const [email, setEmail]       = useState(user.email);
-  const [oldPass, setOldPass]   = useState('');
-  const [newPass, setNewPass]   = useState('');
-  const [confirm, setConfirm]   = useState('');
-  const [closing, setClosing]   = useState(false);
-  const [saved, setSaved]       = useState(false);
-  const backdropRef             = useRef(null);
+  const [tab, setTab]         = useState('name');
+  const [name, setName]       = useState(user.name);
+  const [email, setEmail]     = useState(user.email);
+  const [oldPass, setOldPass] = useState('');
+  const [newPass, setNewPass] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [closing, setClosing] = useState(false);
+  const [saved, setSaved]     = useState(false);
+  const backdropRef           = useRef(null);
 
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') handleClose(); };
@@ -20,25 +23,15 @@ function SettingsModal({ user, onClose, onSave }) {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  const handleClose = () => {
-    setClosing(true);
-    setTimeout(onClose, 300);
-  };
-
-  const handleBackdrop = (e) => {
-    if (e.target === backdropRef.current) handleClose();
-  };
+  const handleClose = () => { setClosing(true); setTimeout(onClose, 300); };
+  const handleBackdrop = (e) => { if (e.target === backdropRef.current) handleClose(); };
 
   const handleSave = () => {
     setSaved(true);
     const updated = { name, email };
-    // Зберігаємо оновлені дані в localStorage
     const stored = JSON.parse(localStorage.getItem('jordan_user') || '{}');
     localStorage.setItem('jordan_user', JSON.stringify({ ...stored, ...updated }));
-    setTimeout(() => {
-      onSave(updated);
-      handleClose();
-    }, 900);
+    setTimeout(() => { onSave(updated); handleClose(); }, 900);
   };
 
   const TABS = [
@@ -87,26 +80,15 @@ function SettingsModal({ user, onClose, onSave }) {
             {tab === 'name' && (
               <div className="sm-field">
                 <label className="sm-label">FULL NAME</label>
-                <input
-                  className="sm-input"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  placeholder="YOUR NAME"
-                  autoFocus
-                />
+                <input className="sm-input" value={name} onChange={e => setName(e.target.value)}
+                  placeholder="YOUR NAME" autoFocus />
               </div>
             )}
             {tab === 'email' && (
               <div className="sm-field">
                 <label className="sm-label">EMAIL ADDRESS</label>
-                <input
-                  type="email"
-                  className="sm-input"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="YOUR@EMAIL.COM"
-                  autoFocus
-                />
+                <input type="email" className="sm-input" value={email}
+                  onChange={e => setEmail(e.target.value)} placeholder="YOUR@EMAIL.COM" autoFocus />
               </div>
             )}
             {tab === 'password' && (
@@ -128,7 +110,6 @@ function SettingsModal({ user, onClose, onSave }) {
                 </div>
               </>
             )}
-
             <button className="sm-save" onClick={handleSave}>SAVE CHANGES →</button>
           </div>
         )}
@@ -138,13 +119,15 @@ function SettingsModal({ user, onClose, onSave }) {
   );
 }
 
+/* ProfileDropdown */
 export default function ProfileDropdown({ user, onLogout }) {
-  const [open, setOpen]        = useState(false);
-  const [settings, setSettings] = useState(false);
+  const [open, setOpen]           = useState(false);
+  const [settings, setSettings]   = useState(false);
+  const [ordersOpen, setOrdersOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(user);
-  const dropRef                = useRef(null);
+  const dropRef      = useRef(null);
+  const activeOrders = useSelector(selectActiveOrders);
 
-  // Закрити при кліку за межами
   useEffect(() => {
     const handler = (e) => {
       if (dropRef.current && !dropRef.current.contains(e.target)) setOpen(false);
@@ -153,7 +136,6 @@ export default function ProfileDropdown({ user, onLogout }) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Синхронізувати якщо user змінився зовні
   useEffect(() => { setCurrentUser(user); }, [user]);
 
   const initials = currentUser.name
@@ -170,8 +152,8 @@ export default function ProfileDropdown({ user, onLogout }) {
         </svg>
       ),
       label: 'MY ORDERS',
-      sub: '3 active',
-      onClick: () => setOpen(false),
+      badge: activeOrders.length > 0 ? activeOrders.length : null,
+      onClick: () => { setOpen(false); setOrdersOpen(true); },
     },
     {
       icon: (
@@ -188,7 +170,6 @@ export default function ProfileDropdown({ user, onLogout }) {
   return (
     <>
       <div className="pd-wrap" ref={dropRef}>
-        {/* Аватар-кнопка */}
         <div
           className={`pd-avatar ${open ? 'active' : ''}`}
           onClick={() => setOpen(o => !o)}
@@ -198,12 +179,9 @@ export default function ProfileDropdown({ user, onLogout }) {
           <div className="pd-online-dot" />
         </div>
 
-        {/* Дропдаун */}
         {open && (
           <div className="pd-dropdown">
             <div className="pd-deco" />
-
-            {/* Інфо користувача */}
             <div className="pd-user-info">
               <div className="pd-user-avatar">{initials}</div>
               <div className="pd-user-text">
@@ -211,10 +189,7 @@ export default function ProfileDropdown({ user, onLogout }) {
                 <span className="pd-user-email">{currentUser.email}</span>
               </div>
             </div>
-
             <div className="pd-divider" />
-
-            {/* Меню */}
             <ul className="pd-menu">
               {menuItems.map(item => (
                 <li key={item.label}>
@@ -230,10 +205,7 @@ export default function ProfileDropdown({ user, onLogout }) {
                 </li>
               ))}
             </ul>
-
             <div className="pd-divider" />
-
-            {/* Вихід */}
             <button className="pd-logout" onClick={() => { setOpen(false); onLogout(); }}>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
@@ -246,8 +218,8 @@ export default function ProfileDropdown({ user, onLogout }) {
         )}
       </div>
 
-      {/* Модалка налаштувань */}
-      {settings && (
+      {ordersOpen && <OrdersModal onClose={() => setOrdersOpen(false)} />}
+      {settings   && (
         <SettingsModal
           user={currentUser}
           onClose={() => setSettings(false)}

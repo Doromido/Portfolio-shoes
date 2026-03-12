@@ -278,3 +278,39 @@
   color: white;
   background: rgba(255,255,255,0.08);
 }
+/* Error block */
+.lm-error-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  background: rgba(255, 60, 60, 0.07);
+  border: 1px solid rgba(255, 60, 60, 0.25);
+  padding: 0.75rem 0.9rem;
+  color: #ff6b6b;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 1px;
+  line-height: 1.6;
+  animation: lmFadeIn 0.25s ease;
+}
+.lm-error-block svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.lm-error-block span {
+  color: rgba(255,255,255,0.5);
+}
+.lm-error-switch {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: opacity 0.2s;
+}
+.lm-error-switch:hover { opacity: 0.75; }

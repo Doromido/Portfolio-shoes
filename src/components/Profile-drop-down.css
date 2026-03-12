@@ -379,3 +379,245 @@
   letter-spacing: 4px;
   color: white;
 }
+/* ORDERS MODAL */
+.orders-modal {
+  width: 600px;
+  max-width: calc(100vw - 2rem);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  padding: 2.8rem 2.8rem 0;
+}
+
+.orders-modal .sm-header {
+  flex-shrink: 0;
+  margin-bottom: 1.6rem;
+}
+
+.orders-modal .sm-tagline {
+  font-size: 0.7rem;
+  letter-spacing: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.orders-modal .sm-title {
+  font-size: 2.8rem;
+}
+
+.orders-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 0 2.5rem;
+  color: rgba(255,255,255,0.25);
+}
+.orders-empty p {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.9rem;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,0.4);
+  margin: 0;
+}
+.orders-empty span {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+}
+
+.orders-list {
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding-bottom: 2rem;
+  scrollbar-width: none;
+}
+.orders-list::-webkit-scrollbar { display: none; }
+
+/* Card */
+.order-card {
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 1.4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  transition: border-color 0.2s;
+}
+.order-card:hover { border-color: rgba(255,255,255,0.18); }
+.order-card.cancelled {
+  opacity: 0.45;
+  border-color: rgba(255,255,255,0.04);
+}
+
+/* Head */
+.order-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.order-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.order-num {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 1rem;
+  color: white;
+  letter-spacing: 0.5px;
+}
+.order-date {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.35);
+}
+.order-status {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  font-weight: 900;
+}
+.order-status.active   { color: var(--accent); filter: drop-shadow(0 0 5px var(--glow)); }
+.order-status.cancelled { color: rgba(255,255,255,0.25); }
+
+/* Items */
+.order-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.order-item-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.order-item-img {
+  width: 68px;
+  height: 68px;
+  object-fit: contain;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+.order-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.order-item-name {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.order-item-meta {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.32);
+}
+.order-item-price {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 0.95rem;
+  color: white;
+  flex-shrink: 0;
+}
+
+/* Footer */
+.order-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 0.9rem;
+}
+.order-delivery {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 1.5px;
+  color: rgba(255,255,255,0.32);
+}
+.order-total {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.55);
+}
+.order-total strong {
+  color: white;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+/* Cancel */
+.order-cancel-btn {
+  width: 100%;
+  background: none;
+  border: 1px solid rgba(255,80,80,0.25);
+  color: rgba(255,80,80,0.6);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 2.5px;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.order-cancel-btn:hover {
+  border-color: rgba(255,80,80,0.65);
+  color: #ff5050;
+  background: rgba(255,50,50,0.06);
+}
+
+.order-confirm-cancel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  border: 1px solid rgba(255,80,80,0.3);
+  padding: 1rem 1.1rem;
+  background: rgba(255,50,50,0.04);
+}
+.order-confirm-cancel > span {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.6);
+}
+.order-confirm-btns {
+  display: flex;
+  gap: 0.6rem;
+}
+.order-cancel-yes {
+  flex: 1;
+  background: rgba(255,50,50,0.15);
+  border: 1px solid rgba(255,80,80,0.4);
+  color: #ff5050;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  padding: 0.7rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.order-cancel-yes:hover { background: rgba(255,50,50,0.28); }
+.order-cancel-no {
+  flex: 1;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.45);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  padding: 0.7rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.order-cancel-no:hover { color: white; border-color: rgba(255,255,255,0.35); }

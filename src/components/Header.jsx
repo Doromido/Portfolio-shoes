@@ -13,116 +13,122 @@ import {
 import LoginModal from './Login-modal';
 import ProfileDropdown from './Profile-drop-down';
 
-export default function Header() {
-  const dispatch      = useDispatch();
-  const wishCount     = useSelector(selectWishlistCount);
-  const wishOpen      = useSelector(selectWishlistOpen);
-  const cartCount     = useSelector(selectCartCount);
-  const cartOpen      = useSelector(selectCartOpen);
+export default function Header({ onUserChange }) {
+  const dispatch  = useDispatch();
+  const wishCount = useSelector(selectWishlistCount);
+  const wishOpen  = useSelector(selectWishlistOpen);
+  const cartCount = useSelector(selectCartCount);
+  const cartOpen  = useSelector(selectCartOpen);
+
   const [searchOpen, setSearchOpen] = useState(false);
   const [loginOpen, setLoginOpen]   = useState(false);
-  // Reading saved session on load
+
   const [user, setUser] = useState(() => {
     try {
       const stored = localStorage.getItem('jordan_user');
       return stored ? JSON.parse(stored) : null;
     } catch { return null; }
   });
+
   const location = useLocation();
   const isActive = (path) => location.pathname === path;
 
   const handleLogin = (userData) => {
     setUser(userData);
     setLoginOpen(false);
+    onUserChange?.(userData);
   };
 
   const handleLogout = () => {
     localStorage.removeItem('jordan_user');
     setUser(null);
+    onUserChange?.(null);
   };
+
+  // Дозволяє Footer відкрити логін-модал
+  const openLogin = () => setLoginOpen(true);
 
   return (
     <>
-    <nav className="navbar">
-      <div className="logo-section">
-        <img src="/logo.png" alt="Logo" />
-      </div>
-
-      <ul className="nav-links">
-        <li><Link to="/"      className={isActive('/')      ? 'active' : ''}>HOME</Link></li>
-        <li><Link to="/women" className={isActive('/women') ? 'active' : ''}>WOMEN</Link></li>
-        <li><Link to="/men"   className={isActive('/men')   ? 'active' : ''}>MEN</Link></li>
-        <li><Link to="/kids"  className={isActive('/kids')  ? 'active' : ''}>KIDS</Link></li>
-        <li><Link to="/sale"  className={isActive('/sale')  ? 'active' : ''}>SALE</Link></li>
-      </ul>
-
-      <div className="nav-icons">
-        <div className={`search-bar ${searchOpen ? 'active' : ''}`}>
-          <input
-            type="text"
-            className="search-input"
-            placeholder="SEARCH..."
-            autoFocus={searchOpen}
-          />
+      <nav className="navbar">
+        <div className="logo-section">
+          <img src="/logo.png" alt="Logo" />
         </div>
 
-        <button className="icon-btn" onClick={() => setSearchOpen(!searchOpen)}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="10" cy="10" r="7"/>
-            <line x1="21" y1="21" x2="15" y2="15"/>
-          </svg>
-        </button>
+        <ul className="nav-links">
+          <li><Link to="/"      className={isActive('/')      ? 'active' : ''}>HOME</Link></li>
+          <li><Link to="/women" className={isActive('/women') ? 'active' : ''}>WOMEN</Link></li>
+          <li><Link to="/men"   className={isActive('/men')   ? 'active' : ''}>MEN</Link></li>
+          <li><Link to="/kids"  className={isActive('/kids')  ? 'active' : ''}>KIDS</Link></li>
+          <li><Link to="/sale"  className={isActive('/sale')  ? 'active' : ''}>SALE</Link></li>
+        </ul>
 
-        {/* Wishlist */}
-        <button
-          className={`icon-btn wishlist-nav-btn ${wishCount > 0 ? 'has-items' : ''}`}
-          onClick={() => {
-            dispatch(setCartOpen(false));
-            dispatch(setWishlistOpen(!wishOpen));
-          }}
-          aria-label="Toggle wishlist"
-        >
-          <svg viewBox="0 0 24 24" width="26" height="26"
-            stroke="currentColor"
-            fill={wishCount > 0 ? 'currentColor' : 'none'}
-            strokeWidth="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-          </svg>
-          {wishCount > 0 && (
-            <span className="wishlist-badge">{wishCount}</span>
-          )}
-        </button>
-
-        {/* Cart */}
-        <button
-          className={`icon-btn cart-nav-btn ${cartCount > 0 ? 'has-items' : ''}`}
-          onClick={() => {
-            dispatch(setWishlistOpen(false));
-            dispatch(setCartOpen(!cartOpen));
-          }}
-          aria-label="Toggle cart"
-        >
-          <img src="/cart.png" alt="Cart" />
-          {cartCount > 0 && (
-            <span className="wishlist-badge cart-badge">{cartCount}</span>
-          )}
-        </button>
-
-        {user ? (
-          <ProfileDropdown user={user} onLogout={handleLogout} />
-        ) : (
-          <div className="profile-icon" onClick={() => setLoginOpen(true)}>
-            <img src="/avatar.png" alt="Profile" />
+        <div className="nav-icons">
+          <div className={`search-bar ${searchOpen ? 'active' : ''}`}>
+            <input
+              type="text"
+              className="search-input"
+              placeholder="SEARCH..."
+              autoFocus={searchOpen}
+            />
           </div>
-        )}
-      </div>
-    </nav>
 
-    <LoginModal
-      isOpen={loginOpen}
-      onClose={() => setLoginOpen(false)}
-      onLogin={handleLogin}
-    />
+          <button className="icon-btn" onClick={() => setSearchOpen(!searchOpen)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="10" cy="10" r="7"/>
+              <line x1="21" y1="21" x2="15" y2="15"/>
+            </svg>
+          </button>
+
+          {/* Wishlist */}
+          <button
+            className={`icon-btn wishlist-nav-btn ${wishCount > 0 ? 'has-items' : ''}`}
+            onClick={() => {
+              dispatch(setCartOpen(false));
+              dispatch(setWishlistOpen(!wishOpen));
+            }}
+            aria-label="Toggle wishlist"
+          >
+            <svg viewBox="0 0 24 24" width="26" height="26"
+              stroke="currentColor"
+              fill={wishCount > 0 ? 'currentColor' : 'none'}
+              strokeWidth="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            {wishCount > 0 && <span className="wishlist-badge">{wishCount}</span>}
+          </button>
+
+          {/* Cart */}
+          <button
+            className={`icon-btn cart-nav-btn ${cartCount > 0 ? 'has-items' : ''}`}
+            onClick={() => {
+              dispatch(setWishlistOpen(false));
+              dispatch(setCartOpen(!cartOpen));
+            }}
+            aria-label="Toggle cart"
+          >
+            <img src="/cart.png" alt="Cart" />
+            {cartCount > 0 && <span className="wishlist-badge cart-badge">{cartCount}</span>}
+          </button>
+
+          {user ? (
+            <ProfileDropdown user={user} onLogout={handleLogout} />
+          ) : (
+            <div className="profile-icon" onClick={() => setLoginOpen(true)}>
+              <img src="/avatar.png" alt="Profile" />
+            </div>
+          )}
+        </div>
+      </nav>
+
+      <LoginModal
+        isOpen={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onLogin={handleLogin}
+      />
     </>
   );
 }
+
+// Експортуємо openLogin і user щоб App міг передати у Footer
+export { };

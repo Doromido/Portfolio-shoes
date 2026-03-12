@@ -10,6 +10,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }) {
   const [loading, setLoading]   = useState(false);
   const [success, setSuccess]   = useState(false);
   const [closing, setClosing]   = useState(false);
+  const [error, setError]       = useState('');
   const backdropRef             = useRef(null);
 
   // Reset form when modal opens
@@ -21,6 +22,7 @@ export default function LoginModal({ isOpen, onClose, onLogin }) {
       setPassword('');
       setName('');
       setMode('login');
+      setError('');
     }
   }, [isOpen]);
 
@@ -43,15 +45,31 @@ export default function LoginModal({ isOpen, onClose, onLogin }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!email || !password) return;
+    setError('');
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
+
+      if (mode === 'login') {
+        // Check if account exists in localStorage
+        try {
+          const stored = localStorage.getItem('jordan_user');
+          const saved = stored ? JSON.parse(stored) : null;
+          if (!saved || saved.email.toLowerCase() !== email.toLowerCase()) {
+            setError('NO_ACCOUNT');
+            return;
+          }
+        } catch {
+          setError('NO_ACCOUNT');
+          return;
+        }
+      }
+
       setSuccess(true);
       const displayName = mode === 'register' && name.trim()
         ? name.trim()
         : email.split('@')[0].toUpperCase();
       const userData = { name: displayName, email };
-      // Saving session
       localStorage.setItem('jordan_user', JSON.stringify(userData));
       setTimeout(() => {
         onLogin(userData);
@@ -175,6 +193,23 @@ export default function LoginModal({ isOpen, onClose, onLogin }) {
 
             {mode === 'login' && (
               <a href="#" className="lm-forgot">FORGOT PASSWORD?</a>
+            )}
+
+            {error === 'NO_ACCOUNT' && (
+              <div className="lm-error-block">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span>
+                  Incorrect email or password.{' '}
+                  <button type="button" className="lm-error-switch" onClick={() => { setError(''); setMode('register'); }}>
+                    Create an account
+                  </button>
+                  {' '}to get started.
+                </span>
+              </div>
             )}
 
             <button
