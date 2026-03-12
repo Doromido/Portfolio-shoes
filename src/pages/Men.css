@@ -719,19 +719,6 @@
   gap: 1.5rem;
 }
 
-.mp-ed-link {
-  font-size: 0.62rem;
-  letter-spacing: 3px;
-  color: rgba(255,255,255,0.4);
-  text-decoration: none;
-  cursor: pointer;
-  transition: color 0.2s;
-  background: none;
-  border: none;
-}
-
-.mp-ed-link:hover { color: white; }
-
 /* SIZE STRIP */
 .mp-size-strip {
   background: #0d0d0d;
@@ -881,11 +868,6 @@
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(28px); }
   to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
 }
 
 /* RESPONSIVE */

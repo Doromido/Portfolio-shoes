@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { MEN_PRODUCTS, MEN_FILTERS } from './M-products.js';
 import {
   toggleWishlist,
@@ -19,12 +19,28 @@ const HeartIcon = ({ filled }) => (
 );
 
 export default function MenPage() {
-  const [activeFilter, setActiveFilter] = useState('ALL');
+  const location = useLocation();
+  const [activeFilter, setActiveFilter] = useState(() => location.state?.activeFilter ?? 'ALL');
   const navigate = useNavigate();
   const [toast, setToast] = useState(null);
   const [toastHiding, setToastHiding] = useState(false);
   const dispatch = useDispatch();
   const wishlistIds = useSelector(state => state.wishlist.ids);
+
+  // Restore scroll position when returning from product page
+  React.useEffect(() => {
+    if (location.state?.scrollY != null) {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: location.state.scrollY, behavior: 'instant' });
+      });
+    }
+  }, []);
+
+  const goToProduct = (id) => {
+    navigate(`/product/${id}`, {
+      state: { returnTo: '/men', scrollY: window.scrollY, activeFilter },
+    });
+  };
 
   const handleToggleWishlist = (e, id) => {
     e.stopPropagation();
@@ -70,7 +86,7 @@ export default function MenPage() {
               Play sharp. Look sharp.
             </p>
             <div className="mp-hero-cta-row">
-              <button className="mp-btn-ghost">VIEW LOOKBOOK ↗</button>
+              <button className="mp-btn-ghost" onClick={() => document.getElementById('editorial-bottom').scrollIntoView({ behavior: 'smooth' })}>VIEW SALE</button>
               <button
                 className="mp-btn-primary"
                 onClick={() => document.querySelector('.mp-products').scrollIntoView({ behavior: 'smooth' })}
@@ -146,8 +162,8 @@ export default function MenPage() {
             const liked = wishlistIds.includes(p.id);
             return (
               <div key={p.id} className="bs-card mc-card">
-                <div className="bs-img-wrap">
-                  {p.badge && <span className="bs-badge">{p.badge}</span>}
+                <div className="bs-img-wrap" style={{ cursor: 'pointer' }}
+                  onClick={() => goToProduct(p.id)}>                  {p.badge && <span className="bs-badge">{p.badge}</span>}
                   <button
                     className={`bs-heart ${liked ? 'liked' : ''}`}
                     onClick={(e) => handleToggleWishlist(e, p.id)}
@@ -163,7 +179,8 @@ export default function MenPage() {
                   </div>
                 </div>
                 <div className="bs-info">
-                  <p className="bs-name">{p.name}</p>
+                  <p className="bs-name" style={{ cursor: 'pointer' }}
+                    onClick={() => goToProduct(p.id)}>{p.name}</p>
                   <div className="bs-price-row">
                     <span className="bs-price">${p.price}</span>
                     <span className="mc-colors">{p.colorways.length} COLORS</span>
@@ -176,7 +193,7 @@ export default function MenPage() {
       </section>
 
       {/* EDITORIAL BOTTOM */}
-      <section className="mp-editorial-bottom">
+      <section className="mp-editorial-bottom" id="editorial-bottom">
         <div className="mp-ed-text">
           <span className="mp-ed-eyebrow">DESIGNED FOR HIM</span>
           <h2>
@@ -195,8 +212,7 @@ export default function MenPage() {
             ))}
           </div>
           <div className="mp-ed-cta-row">
-            <button className="mp-btn-primary" onClick={() => navigate('/sale')}>SEE WHAT'S ON SALE →</button>
-            <button className="mp-ed-link">VIEW LOOKBOOK ↗</button>
+            <button className="mp-btn-primary" onClick={() => navigate('/sale', { state: { scrollToTop: true } })}>SEE WHAT'S ON SALE →</button>
           </div>
         </div>
         <div className="mp-ed-img-wrap">
@@ -240,7 +256,7 @@ export default function MenPage() {
               </div>
             ))}
           </div>
-          <button className="mp-btn-ghost">SIZE GUIDE →</button>
+          <button className="mp-btn-ghost" onClick={() => navigate('/size-guide', { state: { gender: 'men', returnTo: '/men' } })}>SIZE GUIDE →</button>
         </div>
       </section>
 
