@@ -369,27 +369,6 @@
   box-shadow: 6px 6px 0 var(--kp-dark);
 }
 
-.kp-btn-ghost {
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 2px;
-  background: transparent;
-  color: var(--kp-dark);
-  border: var(--kp-outline);
-  box-shadow: var(--kp-shadow);
-  padding: 0.65rem 1.5rem;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-
-.kp-btn-ghost:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--kp-dark);
-  background: var(--kp-yellow);
-}
-
 .kp-explore-btn {
   font-family: 'Nunito', sans-serif;
   font-size: 0.62rem;
@@ -437,12 +416,6 @@
   font-size: clamp(3rem, 6vw, 6rem);
   letter-spacing: 3px;
   line-height: 0.9;
-}
-
-.kp-collection-title--outline {
-  color: transparent;
-  -webkit-text-stroke: 3px var(--kp-dark);
-  text-shadow: none;
 }
 
 .kp-collection-rainbow {

@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { addToCart, toggleWishlist, selectWishlistIds } from '../store';
 import { KIDS_PRODUCTS, FILTERS } from './K-products';
 import './Kids.css';
@@ -190,11 +191,27 @@ const HeartIcon = ({ filled }) => (
 );
 
 export default function KidsPage() {
-  const [activeFilter, setActiveFilter] = useState('ALL');
+  const location = useLocation();
+  const [activeFilter, setActiveFilter] = useState(() => location.state?.activeFilter ?? 'ALL');
   const [toast, setToast] = useState(null);
   const [toastHiding, setToastHiding] = useState(false);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const wishlistIds = useSelector(selectWishlistIds);
+
+  React.useEffect(() => {
+    if (location.state?.scrollY != null) {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: location.state.scrollY, behavior: 'instant' });
+      });
+    }
+  }, []);
+
+  const goToProduct = (id) => {
+    navigate(`/product/${id}`, {
+      state: { returnTo: '/kids', scrollY: window.scrollY, activeFilter },
+    });
+  };
 
   const showToast = useCallback((p) => {
     setToastHiding(false);
@@ -343,7 +360,8 @@ export default function KidsPage() {
                 className={`kp-card kp-card--${i % 3 === 1 ? 'accent' : i % 3 === 2 ? 'alt' : 'base'}`}
                 style={{ '--card-rot': `${rotations[i % rotations.length]}deg` }}
               >
-                <div className="kp-card-img-wrap">
+                <div className="kp-card-img-wrap" style={{ cursor: 'pointer' }}
+                  onClick={() => goToProduct(p.id)}>
                   {p.badge && <span className="kp-badge">{p.badge}</span>}
                   <button
                     className={`kp-heart ${liked ? 'liked' : ''}`}
@@ -354,7 +372,8 @@ export default function KidsPage() {
                   <img src={p.img} alt={p.name} className="kp-card-img" />
                 </div>
                 <div className="kp-card-info">
-                  <p className="kp-card-name">{p.name}</p>
+                  <p className="kp-card-name" style={{ cursor: 'pointer' }}
+                    onClick={() => goToProduct(p.id)}>{p.name}</p>
                   <p className="kp-card-sub">{p.sub}</p>
                   <div className="kp-card-bottom">
                     <span className="kp-card-price">${p.price}</span>
@@ -385,7 +404,8 @@ export default function KidsPage() {
             const accents = ['kp-pop-card--yellow', 'kp-pop-card--green', 'kp-pop-card--orange', 'kp-pop-card--blue', 'kp-pop-card--pink', 'kp-pop-card--yellow'];
             return (
               <div key={p.id} className={`kp-pop-card ${accents[i]}`}>
-                <div className="kp-pop-img-wrap">
+                <div className="kp-pop-img-wrap" style={{ cursor: 'pointer' }}
+                  onClick={() => goToProduct(p.id)}>
                   <img src={p.img} alt={p.name} />
                   <button
                     className={`kp-heart kp-pop-heart ${liked ? 'liked' : ''}`}
@@ -395,7 +415,8 @@ export default function KidsPage() {
                   </button>
                 </div>
                 <div className="kp-pop-info">
-                  <p className="kp-pop-name">{p.name}</p>
+                  <p className="kp-pop-name" style={{ cursor: 'pointer' }}
+                    onClick={() => goToProduct(p.id)}>{p.name}</p>
                   <div className="kp-pop-bottom">
                     <span className="kp-pop-price">${p.price}</span>
                     <button
