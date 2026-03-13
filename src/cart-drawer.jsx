@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   removeFromCart,
   updateQty,
@@ -29,11 +30,14 @@ function CloseIcon({ size = 20 }) {
 
 export default function CartDrawer() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
   const items    = useSelector(selectCartItems);
   const total    = useSelector(selectCartTotal);
   const open     = useSelector(selectCartOpen);
   const [visible, setVisible]   = useState(false);
   const [closing, setClosing]   = useState(false);
+  const [sizeWarning, setSizeWarning] = useState(false);
 
   // When store opens the drawer
   useEffect(() => {
@@ -99,7 +103,7 @@ export default function CartDrawer() {
               <span>Add some shoes to get started</span>
             </div>
           ) : items.map(item => (
-            <div className="wl-item" key={`${item.id}-${item.color || 'default'}`}>
+            <div className="wl-item" key={`${item.id}-${item.color || 'default'}-${item.size || 'nosize'}`}>
 
               <div className="wl-item-img">
                 <img src={item.img} alt={item.name} />
@@ -113,35 +117,45 @@ export default function CartDrawer() {
                 <p className="wl-item-name">{item.name}</p>
                 <span className="wl-item-price">${item.price}</span>
 
-                {/* Size selection */}
-                <div className="cart-size-row">
-                  <span className="cart-size-label">SIZE</span>
-                  <div className="cart-size-options">
-                    {getSizes(item.id).map(s => (
-                      <button
-                        key={s}
-                        className={`cart-size-btn ${item.size === s ? 'active' : ''}`}
-                        onClick={() => dispatch(setItemSize({
-                          id: item.id, color: item.color, size: s
-                        }))}
-                        type="button"
-                      >
-                        {s}
-                      </button>
-                    ))}
+                {/* Size: locked badge if chosen on product page, selector if added from catalogue */}
+                {item.size ? (
+                  <div className="cart-size-row">
+                    <span className="cart-size-label">SIZE</span>
+                    <span className="cart-size-locked">{item.size}</span>
                   </div>
-                </div>
+                ) : (
+                  <div className="cart-size-row">
+                    <span className="cart-size-label">SIZE</span>
+                    <div className="cart-size-options">
+                      {getSizes(item.id).map(s => (
+                        <button
+                          key={s}
+                          className={`cart-size-btn ${item.size === s ? 'active' : ''}`}
+                          onClick={() => {
+                            dispatch(setItemSize({
+                              id: item.id, color: item.color, oldSize: undefined, size: s
+                            }));
+                            setSizeWarning(false);
+                          }}
+                          type="button"
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Qty controls */}
                 <div className="cart-qty">
                   <button className="cart-qty-btn"
                     onClick={() => dispatch(updateQty({
-                      id: item.id, color: item.color, qty: item.qty - 1
+                      id: item.id, color: item.color, size: item.size, qty: item.qty - 1
                     }))}>−</button>
                   <span className="cart-qty-val">{item.qty}</span>
                   <button className="cart-qty-btn"
                     onClick={() => dispatch(updateQty({
-                      id: item.id, color: item.color, qty: item.qty + 1
+                      id: item.id, color: item.color, size: item.size, qty: item.qty + 1
                     }))}>+</button>
                 </div>
 
@@ -151,7 +165,7 @@ export default function CartDrawer() {
               </div>
 
               <button className="wl-item-remove"
-                onClick={() => dispatch(removeFromCart({ id: item.id, color: item.color }))}>
+                onClick={() => dispatch(removeFromCart({ id: item.id, color: item.color, size: item.size }))}>
                 <CloseIcon size={14} />
               </button>
             </div>
@@ -164,7 +178,21 @@ export default function CartDrawer() {
               <span>TOTAL</span>
               <span className="cart-total-amount">${total}</span>
             </div>
-            <button className="wl-cart-all">CHECKOUT →</button>
+            {sizeWarning && (
+              <div className="cart-size-warning">
+                ⚠ Please select a size for all items before checkout
+              </div>
+            )}
+            <button className="wl-cart-all" onClick={() => {
+              const hasUnsized = items.some(i => !i.size);
+              if (hasUnsized) {
+                setSizeWarning(true);
+                return;
+              }
+              setSizeWarning(false);
+              dispatch(setCartOpen(false));
+              navigate('/checkout', { state: { from: location.pathname } });
+            }}>CHECKOUT →</button>
             <button className="cart-clear" onClick={() => dispatch(clearCart())}>
               Clear cart
             </button>

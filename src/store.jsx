@@ -70,11 +70,13 @@ const cartSlice = createSlice({
   initialState: { items: [], open: false },
   reducers: {
     addToCart(state, action) {
-      const product = action.payload;            // { id, name, img, price, color?, accent?, sale? }
-      // For products with colors, we compare id+color, for others - only id
-      const matchKey = product.color 
-        ? (i => i.id === product.id && i.color === product.color)
-        : (i => i.id === product.id);
+      const product = action.payload;            // { id, name, img, price, color?, accent?, sale?, size? }
+      // Match key: id + color (if any) + size (if any)
+      // This allows the same product in different sizes to be separate cart entries
+      const matchKey = i =>
+        i.id === product.id &&
+        (product.color ? i.color === product.color : !i.color || i.color === product.color) &&
+        (product.size  ? i.size  === product.size  : !i.size);
       
       const existing = state.items.find(matchKey);
       
@@ -85,34 +87,34 @@ const cartSlice = createSlice({
       }
     },
     removeFromCart(state, action) {
-      const { id, color } = typeof action.payload === 'object' 
+      const { id, color, size } = typeof action.payload === 'object' 
         ? action.payload 
-        : { id: action.payload, color: undefined };
+        : { id: action.payload, color: undefined, size: undefined };
       
       state.items = state.items.filter(i => {
-        if (color) {
-          return !(i.id === id && i.color === color);
-        }
-        return i.id !== id;
+        const sameId    = i.id === id;
+        const sameColor = color ? i.color === color : true;
+        const sameSize  = size  ? i.size  === size  : !i.size;
+        return !(sameId && sameColor && sameSize);
       });
     },
     updateQty(state, action) {
-      const { id, color, qty } = action.payload;
+      const { id, color, size, qty } = action.payload;
       
       const item = state.items.find(i => {
-        if (color) {
-          return i.id === id && i.color === color;
-        }
-        return i.id === id;
+        const sameId    = i.id === id;
+        const sameColor = color ? i.color === color : !i.color;
+        const sameSize  = size  !== undefined ? i.size === size : true;
+        return sameId && sameColor && sameSize;
       });
       
       if (item) {
         if (qty <= 0) {
           state.items = state.items.filter(i => {
-            if (color) {
-              return !(i.id === id && i.color === color);
-            }
-            return i.id !== id;
+            const sameId    = i.id === id;
+            const sameColor = color ? i.color === color : !i.color;
+            const sameSize  = size !== undefined ? i.size === size : true;
+            return !(sameId && sameColor && sameSize);
           });
         } else {
           item.qty = qty;
@@ -120,10 +122,13 @@ const cartSlice = createSlice({
       }
     },
     setItemSize(state, action) {
-      // payload: { id, color, size }
-      const { id, color, size } = action.payload;
-      const item = state.items.find(
-        i => i.id === id && i.color === color
+      // payload: { id, color, oldSize, size }
+      // Used only for items added WITHOUT a size (from catalogue) — lets user pick one in cart
+      const { id, color, oldSize, size } = action.payload;
+      const item = state.items.find(i =>
+        i.id === id &&
+        (color ? i.color === color : !i.color) &&
+        (oldSize !== undefined ? i.size === oldSize : !i.size)
       );
       if (item) item.size = size;
     },
@@ -153,6 +158,29 @@ export const selectCartCount  = (state) =>
 export const selectCartTotal  = (state) =>
   state.cart.items.reduce((sum, i) => sum + i.price * i.qty, 0);
 
+// Orders slice
+// State: { list: [{ id, num, date, items, delivery, total, shipping, status }] }
+// status: 'active' | 'cancelled'
+
+const ordersSlice = createSlice({
+  name: 'orders',
+  initialState: { list: [] },
+  reducers: {
+    placeOrder(state, action) {
+      state.list.unshift(action.payload); // newest first
+    },
+    cancelOrder(state, action) {
+      const order = state.list.find(o => o.id === action.payload);
+      if (order) order.status = 'cancelled';
+    },
+  },
+});
+
+export const { placeOrder, cancelOrder } = ordersSlice.actions;
+
+export const selectOrders       = (state) => state.orders.list;
+export const selectActiveOrders = (state) => state.orders.list.filter(o => o.status === 'active');
+
 // Store
 
 const preloadedState = loadState();
@@ -161,15 +189,16 @@ export const store = configureStore({
   reducer: {
     wishlist: wishlistSlice.reducer,
     cart:     cartSlice.reducer,
+    orders:   ordersSlice.reducer,
   },
-  // Restore persisted state (open drawer state is intentionally not persisted)
   preloadedState: preloadedState
     ? {
         wishlist: preloadedState.wishlist,
         cart: {
           ...preloadedState.cart,
-          open: false,   // always start with cart closed
+          open: false,
         },
+        orders: preloadedState.orders || { list: [] },
       }
     : undefined,
 });
@@ -179,7 +208,7 @@ let saveTimer;
 store.subscribe(() => {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
-    const { wishlist, cart } = store.getState();
-    saveState({ wishlist, cart });
+    const { wishlist, cart, orders } = store.getState();
+    saveState({ wishlist, cart, orders });
   }, 300);
 });
