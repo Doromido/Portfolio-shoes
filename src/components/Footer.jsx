@@ -85,7 +85,6 @@ export default function Footer() {
               <li>
                 <a href="#" onClick={handleTrackOrder}>Track Order</a>
               </li>
-              <li><a href="#">Booklook</a></li>
             </ul>
           </div>
 

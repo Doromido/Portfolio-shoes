@@ -45,7 +45,7 @@ export default function Header({ onUserChange }) {
     onUserChange?.(null);
   };
 
-  // Дозволяє Footer відкрити логін-модал
+  //Allows the Footer to open the login modal
   const openLogin = () => setLoginOpen(true);
 
   return (
@@ -130,5 +130,4 @@ export default function Header({ onUserChange }) {
   );
 }
 
-// Експортуємо openLogin і user щоб App міг передати у Footer
 export { };

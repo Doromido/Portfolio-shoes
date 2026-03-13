@@ -2,6 +2,7 @@
   background: #080808;
   color: white;
   font-family: 'Space Mono', monospace;
+  font-size: 125%;
   position: relative;
   overflow: hidden;
 }
@@ -76,7 +77,7 @@
 /* Shared label */
 .footer-col-title {
   display: block;
-  font-size: 0.5rem;
+  font-size: 0.72rem;
   letter-spacing: 4px;
   color: rgba(255,255,255,0.22);
   margin-bottom: 1.6rem;
@@ -180,9 +181,7 @@
   margin-bottom: 1.2rem;
 }
 .footer-newsletter-desc {
-  font-size: 0.65rem;
-  letter-spacing: 1px;
-  color: rgba(255,255,255,0.32);
+  font-size: 0.82rem;
   line-height: 1.9;
   margin-bottom: 1.6rem;
 }
@@ -226,10 +225,7 @@
   box-shadow: 0 0 28px var(--glow);
 }
 .footer-privacy-note {
-  font-size: 0.52rem;
-  letter-spacing: 1px;
-  color: rgba(255,255,255,0.16);
-  margin-top: 0.7rem;
+  font-size: 0.72rem;
 }
 .footer-subscribed {
   display: flex;
