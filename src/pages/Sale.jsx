@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toggleWishlist, addToCart } from '../store';
 import { WOMEN_PRODUCTS } from './W-products.js';
 import { MEN_PRODUCTS } from './M-products.js';
@@ -55,11 +56,16 @@ function Countdown() {
 }
 
 // product card 
-function SaleCard({ p, onAddToCart }) {
+function SaleCard({ p, onAddToCart, getScrollY }) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const wishlistIds = useSelector(s => s.wishlist.ids);
   const liked = wishlistIds.includes(p.id);
   const discount = discountVal(p);
+
+  const goToProduct = () => {
+    navigate(`/product/${p.id}`, { state: { returnTo: '/sale', scrollY: getScrollY() } });
+  };
 
   return (
     <div className="sp-card">
@@ -74,7 +80,8 @@ function SaleCard({ p, onAddToCart }) {
       >
         <HeartIcon filled={liked} />
       </button>
-      <div className="sp-card-img-wrap">
+      <div className="sp-card-img-wrap" style={{ cursor: 'pointer' }}
+        onClick={goToProduct}>
         <img src={p.img} alt={p.name} className="sp-card-img" />
         <div className="sp-card-overlay">
           <button className="sp-add-btn"
@@ -84,7 +91,8 @@ function SaleCard({ p, onAddToCart }) {
         </div>
       </div>
       <div className="sp-card-info">
-        <p className="sp-card-name">{p.name}</p>
+        <p className="sp-card-name" style={{ cursor: 'pointer' }}
+          onClick={goToProduct}>{p.name}</p>
         {p.sub && <p className="sp-card-sub">{p.sub}</p>}
         <div className="sp-card-price-row">
           <span className="sp-card-price">${p.price}</span>
@@ -100,7 +108,7 @@ function SaleCard({ p, onAddToCart }) {
 }
 
 // section 
-function SaleSection({ id, label, tagline, products, accent, onAddToCart }) {
+function SaleSection({ id, label, tagline, products, accent, onAddToCart, getScrollY }) {
   const [hovered, setHovered] = useState(false);
   return (
     <section className="sp-section" id={id}
@@ -117,7 +125,7 @@ function SaleSection({ id, label, tagline, products, accent, onAddToCart }) {
       </div>
       <div className="sp-grid">
         {products.map(p => (
-          <SaleCard key={p.id} p={p} onAddToCart={onAddToCart} />
+          <SaleCard key={p.id} p={p} onAddToCart={onAddToCart} getScrollY={getScrollY} />
         ))}
       </div>
     </section>
@@ -127,12 +135,23 @@ function SaleSection({ id, label, tagline, products, accent, onAddToCart }) {
 // main page 
 export default function SalePage() {
   const dispatch = useDispatch();
+  const location = useLocation();
   const [toast, setToast] = useState(null);
   const [toastHiding, setToastHiding] = useState(false);
   const [activeTab, setActiveTab] = useState('ALL');
   const womenRef = useRef(null);
   const menRef   = useRef(null);
   const kidsRef  = useRef(null);
+
+  React.useEffect(() => {
+    if (location.state?.scrollY != null) {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: location.state.scrollY, behavior: 'instant' });
+      });
+    }
+  }, []);
+
+  const getScrollY = useCallback(() => window.scrollY, []);
 
   const showToast = useCallback(p => {
     setToastHiding(false);
@@ -242,7 +261,7 @@ export default function SalePage() {
             tagline="WOMEN / SS 2026"
             products={WOMEN_SALE}
             accent="#e63329"
-            onAddToCart={handleAddToCart}
+            onAddToCart={handleAddToCart} getScrollY={getScrollY}
           />
         </div>
 
@@ -259,7 +278,7 @@ export default function SalePage() {
             tagline="MEN / SS 2026"
             products={MEN_SALE}
             accent="#e63329"
-            onAddToCart={handleAddToCart}
+            onAddToCart={handleAddToCart} getScrollY={getScrollY}
           />
         </div>
 
@@ -276,7 +295,7 @@ export default function SalePage() {
             tagline="KIDS / SS 2026"
             products={KIDS_SALE}
             accent="#e63329"
-            onAddToCart={handleAddToCart}
+            onAddToCart={handleAddToCart} getScrollY={getScrollY}
           />
         </div>
       </div>

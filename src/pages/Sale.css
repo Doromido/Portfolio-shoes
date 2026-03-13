@@ -131,14 +131,6 @@
   width: 100%;
 }
 
-.sp-hero-eyebrow {
-  display: block;
-  font-size: 0.62rem;
-  letter-spacing: 5px;
-  color: var(--accent);
-  margin-bottom: 1.8rem;
-  animation: fadeUp 0.8s ease both;
-}
 
 .sp-hero-title {
   font-family: 'Archivo Black', sans-serif;
@@ -193,11 +185,6 @@
   margin-left: 10rem;
 }
 
-.sp-hero-total {
-  font-size: 0.58rem;
-  letter-spacing: 4px;
-  color: rgba(255,255,255,0.25);
-}
 
 /* TICKER */
 .sp-ticker {
@@ -230,55 +217,6 @@
   to   { transform: translateX(-50%); }
 }
 
-/* TAB NAV */
-.sp-tabs {
-  display: flex;
-  gap: 0;
-  background: #0d0d0d;
-  border-bottom: 1px solid var(--border);
-  padding: 0 3rem;
-  position: sticky;
-  top: 0;
-  z-index: 20;
-}
-
-.sp-tab {
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
-  color: rgba(255,255,255,0.3);
-  font-family: 'Space Mono', monospace;
-  font-size: 0.62rem;
-  letter-spacing: 3px;
-  padding: 1.2rem 1.5rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.sp-tab:hover { color: rgba(255,255,255,0.65); }
-
-.sp-tab.active {
-  color: #fff;
-  border-bottom-color: var(--accent);
-}
-
-.sp-tab-count {
-  font-size: 0.5rem;
-  letter-spacing: 1px;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.1);
-  padding: 0.15rem 0.5rem;
-  color: rgba(255,255,255,0.35);
-}
-
-.sp-tab.active .sp-tab-count {
-  background: rgba(230,51,41,0.15);
-  border-color: rgba(230,51,41,0.3);
-  color: var(--accent);
-}
 
 /* SECTION DIVIDER */
 .sp-section-divider {
@@ -436,7 +374,6 @@
 .sp-card-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.55);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -691,7 +628,6 @@
 
 @media (max-width: 768px) {
   .sp-grid { grid-template-columns: repeat(2, 1fr); }
-  .sp-tabs { padding: 0 1.5rem; overflow-x: auto; }
   .sp-section { padding: 2rem 1.5rem 3rem; }
   .sp-section-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
   .sp-countdown { display: none; }
