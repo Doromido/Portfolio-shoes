@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, toggleWishlist, selectWishlistIds } from '../store';
-import './product-new.css';
+import './Product-new.css';
 
 // Data
 const COLORS = [
