@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { loadUserWishlist, loadWishlist, loadUserCart, loadCart, store } from '../store';
 import './Login-modal.css';
 
 export default function LoginModal({ isOpen, onClose, onLogin }) {
@@ -50,31 +51,50 @@ export default function LoginModal({ isOpen, onClose, onLogin }) {
     setTimeout(() => {
       setLoading(false);
 
+      // Load all saved accounts (array)
+      let accounts = [];
+      try {
+        const raw = localStorage.getItem('jordan_accounts');
+        if (raw) accounts = JSON.parse(raw);
+        if (!Array.isArray(accounts)) accounts = [];
+      } catch { accounts = []; }
+
       if (mode === 'login') {
-        // Check if account exists in localStorage
-        try {
-          const stored = localStorage.getItem('jordan_user');
-          const saved = stored ? JSON.parse(stored) : null;
-          if (!saved || saved.email.toLowerCase() !== email.toLowerCase()) {
-            setError('NO_ACCOUNT');
-            return;
-          }
-        } catch {
+        const found = accounts.find(
+          a => a.email.toLowerCase() === email.toLowerCase() && a.password === password
+        );
+        if (!found) {
           setError('NO_ACCOUNT');
           return;
         }
+        const userData = { ...found, loggedIn: true };
+        localStorage.setItem('jordan_user', JSON.stringify(userData));
+        // Restore this user's wishlist and cart into Redux
+        store.dispatch(loadWishlist(loadUserWishlist(found.email)));
+        store.dispatch(loadCart(loadUserCart(found.email)));
+        setSuccess(true);
+        setTimeout(() => { onLogin(userData); handleClose(); }, 1100);
+        return;
       }
 
-      setSuccess(true);
-      const displayName = mode === 'register' && name.trim()
-        ? name.trim()
-        : email.split('@')[0].toUpperCase();
-      const userData = { name: displayName, email };
+      // Register — check if email already taken
+      const exists = accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
+      if (exists) {
+        setError('EMAIL_TAKEN');
+        return;
+      }
+
+      const displayName = name.trim() ? name.trim() : email.split('@')[0].toUpperCase();
+      const newAccount = { name: displayName, email, password };
+      accounts.push(newAccount);
+      localStorage.setItem('jordan_accounts', JSON.stringify(accounts));
+
+      const userData = { ...newAccount, loggedIn: true };
       localStorage.setItem('jordan_user', JSON.stringify(userData));
-      setTimeout(() => {
-        onLogin(userData);
-        handleClose();
-      }, 1100);
+      // New account — wishlist starts empty (nothing to load)
+      store.dispatch(loadWishlist([]));
+      setSuccess(true);
+      setTimeout(() => { onLogin(userData); handleClose(); }, 1100);
     }, 1200);
   };
 
@@ -208,6 +228,22 @@ export default function LoginModal({ isOpen, onClose, onLogin }) {
                     Create an account
                   </button>
                   {' '}to get started.
+                </span>
+              </div>
+            )}
+
+            {error === 'EMAIL_TAKEN' && (
+              <div className="lm-error-block">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span>
+                  This email is already registered.{' '}
+                  <button type="button" className="lm-error-switch" onClick={() => { setError(''); setMode('login'); }}>
+                    Sign in instead
+                  </button>
                 </span>
               </div>
             )}
