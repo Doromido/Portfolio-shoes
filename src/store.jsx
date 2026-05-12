@@ -5,17 +5,48 @@ import { configureStore, createSlice } from '@reduxjs/toolkit';
 function loadState() {
   try {
     const raw = localStorage.getItem('jordan_store');
-    if (!raw) return undefined;
-    const parsed = JSON.parse(raw);
+    const parsed = raw ? JSON.parse(raw) : {};
 
-    // Valid ids look like 'h1'..'h6' or 'w1'..'w18'
-    if (parsed?.wishlist?.ids) {
-      const hasStale = parsed.wishlist.ids.some(id => typeof id === 'number' || /^\d+$/.test(id));
-      if (hasStale) {
-        parsed.wishlist.ids = [];
+    // Load wishlist from per-user key (source of truth)
+    let wishlistIds = [];
+    try {
+      const userRaw = localStorage.getItem('jordan_user');
+      if (userRaw) {
+        const user = JSON.parse(userRaw);
+        if (user?.loggedIn && user?.email) {
+          const perUserRaw = localStorage.getItem('jordan_wishlist_' + user.email.toLowerCase());
+          if (perUserRaw) {
+            const ids = JSON.parse(perUserRaw);
+            // Filter out stale numeric ids
+            wishlistIds = Array.isArray(ids)
+              ? ids.filter(id => typeof id === 'string' && !/^\d+$/.test(id))
+              : [];
+          }
+        }
       }
-    }
-    return parsed;
+    } catch { /* ignore */ }
+
+    // Load cart from per-user key
+    let cartItems = [];
+    try {
+      const userRaw2 = localStorage.getItem('jordan_user');
+      if (userRaw2) {
+        const user2 = JSON.parse(userRaw2);
+        if (user2?.loggedIn && user2?.email) {
+          const cRaw = localStorage.getItem('jordan_cart_' + user2.email.toLowerCase());
+          if (cRaw) {
+            const parsed2 = JSON.parse(cRaw);
+            cartItems = Array.isArray(parsed2) ? parsed2 : [];
+          }
+        }
+      }
+    } catch { /* ignore */ }
+
+    return {
+      ...parsed,
+      wishlist: { ids: wishlistIds, open: false },
+      cart:     { items: cartItems, open: false },
+    };
   } catch {
     return undefined;
   }
@@ -48,13 +79,55 @@ const wishlistSlice = createSlice({
         state.ids.splice(idx, 1);
       }
     },
+    loadWishlist(state, action) {
+      // Replace ids with the given array (used on login)
+      state.ids = action.payload || [];
+    },
     clearWishlist(state) {
       state.ids = [];
     },
   },
 });
 
-export const { toggleWishlist, clearWishlist, setWishlistOpen } = wishlistSlice.actions;
+export const { toggleWishlist, clearWishlist, setWishlistOpen, loadWishlist } = wishlistSlice.actions;
+
+// Per-user wishlist helpers
+// Key pattern: jordan_wishlist_{email}
+export function getUserWishlistKey(email) {
+  return `jordan_wishlist_${email.toLowerCase()}`;
+}
+
+export function saveUserWishlist(email, ids) {
+  try {
+    localStorage.setItem(getUserWishlistKey(email), JSON.stringify(ids));
+  } catch { /* ignore */ }
+}
+
+export function loadUserWishlist(email) {
+  try {
+    const raw = localStorage.getItem(getUserWishlistKey(email));
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+// Per-user cart helpers
+// Key pattern: jordan_cart_{email}
+export function getUserCartKey(email) {
+  return `jordan_cart_${email.toLowerCase()}`;
+}
+
+export function saveUserCart(email, items) {
+  try {
+    localStorage.setItem(getUserCartKey(email), JSON.stringify(items));
+  } catch { /* ignore */ }
+}
+
+export function loadUserCart(email) {
+  try {
+    const raw = localStorage.getItem(getUserCartKey(email));
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
 
 // Selectors
 export const selectWishlistIds    = (state) => state.wishlist.ids;
@@ -132,6 +205,9 @@ const cartSlice = createSlice({
       );
       if (item) item.size = size;
     },
+    loadCart(state, action) {
+      state.items = action.payload || [];
+    },
     clearCart(state) {
       state.items = [];
     },
@@ -146,6 +222,7 @@ export const {
   removeFromCart,
   updateQty,
   setItemSize,
+  loadCart,
   clearCart,
   setCartOpen,
 } = cartSlice.actions;
@@ -178,8 +255,27 @@ const ordersSlice = createSlice({
 
 export const { placeOrder, cancelOrder } = ordersSlice.actions;
 
-export const selectOrders       = (state) => state.orders.list;
-export const selectActiveOrders = (state) => state.orders.list.filter(o => o.status === 'active');
+// Returns the email of the currently logged-in user (from localStorage)
+function getCurrentUserEmail() {
+  try {
+    const raw = localStorage.getItem('jordan_user');
+    if (!raw) return null;
+    return JSON.parse(raw)?.email?.toLowerCase() || null;
+  } catch {
+    return null;
+  }
+}
+
+export const selectOrders = (state) => {
+  const email = getCurrentUserEmail();
+  if (!email) return [];
+  return state.orders.list.filter(o =>
+    // Support legacy orders (no userEmail) only for the session that created them
+    o.userEmail ? o.userEmail === email : false
+  );
+};
+
+export const selectActiveOrders = (state) => selectOrders(state).filter(o => o.status === 'active');
 
 // Store
 
@@ -209,6 +305,13 @@ store.subscribe(() => {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     const { wishlist, cart, orders } = store.getState();
-    saveState({ wishlist, cart, orders });
+    // Only orders go into the shared key; wishlist & cart are per-user
+    saveState({ orders });
+
+    const email = getCurrentUserEmail();
+    if (email) {
+      if (wishlist.ids.length > 0) saveUserWishlist(email, wishlist.ids);
+      if (cart.items.length > 0)   saveUserCart(email, cart.items);
+    }
   }, 300);
 });
