@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, toggleWishlist, selectWishlistIds } from '../store';
+import { useWishlist } from '../hooks/useWishlist';
 import './Product-new.css';
 
 // Data
@@ -30,9 +31,9 @@ const ANGLES = [
 
 // Individual transform for each angle on the main big shoe image
 const ANGLE_TRANSFORMS = [
-  'rotate(15deg)  translateY(15px)',
-  'rotate(-35deg) translateX(-100px)  translateY(-80px) scale(0.9)',
-  'rotate(-50deg) translateX(0px)  translateY(-60px) scale(0.8)',
+  'rotate(15deg)  translateY(-40px)',
+  'rotate(-35deg) translateX(-50px)  translateY(-80px) scale(0.9)',
+  'rotate(-50deg) translateX(-10px)  translateY(-30px) scale(0.8)',
 ];
 
 const ARC_OFFSETS = [
@@ -58,14 +59,13 @@ export default function ProductNew() {
   const location   = useLocation();
   const dispatch   = useDispatch();
   const wishIds    = useSelector(selectWishlistIds);
+  const handleWishlistToggle = useWishlist();
 
   // Read initial color from navigation state 
   const initialColor = location.state?.colorId ?? 0;
   const [colorIdx, setColorIdx]     = useState(initialColor);
-  const [prevColorIdx, setPrevColorIdx] = useState(null);
   const [angleIdx, setAngleIdx]     = useState(0);
   const [sizeIdx, setSizeIdx]       = useState(1);
-  const [switching, setSwitching]   = useState(false);
   const [toast, setToast]           = useState(null);
   const [toastHiding, setToastHiding] = useState(false);
 
@@ -99,15 +99,7 @@ export default function ProductNew() {
     root.style.setProperty('--glow-pulse-1', next.glowPulse1);
     root.style.setProperty('--glow-pulse-2', next.glowPulse2);
     root.style.setProperty('--cart-filter', hexToFilter(next.accent));
-    // Keep prev image visible underneath during crossfade
-    setPrevColorIdx(colorIdx);
-    setSwitching(true);
     setColorIdx(idx);
-    setAngleIdx(0);
-    setTimeout(() => {
-      setSwitching(false);
-      setPrevColorIdx(null);
-    }, 450);
   }, [colorIdx]);
 
   const showToast = useCallback((name, img) => {
@@ -132,7 +124,7 @@ export default function ProductNew() {
     showToast(item.name, item.img);
   };
 
-  const handleWishlist = () => dispatch(toggleWishlist(productId));
+  const handleWishlist = () => handleWishlistToggle(productId);
 
   return (
     <div className="product-page">
@@ -236,20 +228,11 @@ export default function ProductNew() {
           <div className="pp-shoe-stage">
             <div className="pp-shoe-glow" />
             <div className="pp-shoe-float" style={{ transform: ANGLE_TRANSFORMS[angleIdx] }}>
-              {/* Previous shoe */}
-              {prevColorIdx !== null && (
-                <img
-                  src={angleIdx === 0 ? COLORS[prevColorIdx].shoe : COLOR_ANGLES[prevColorIdx][angleIdx]}
-                  alt=""
-                  className="pp-shoe-main pp-shoe-prev"
-                />
-              )}
-              {/* Current shoe */}
               <img
                 key={`${colorIdx}-${angleIdx}`}
                 src={angleIdx === 0 ? current.shoe : COLOR_ANGLES[colorIdx][angleIdx]}
                 alt={`Jordan Jumpman ${current.name}`}
-                className={`pp-shoe-main ${switching ? 'switching-in' : ''}`}
+                className="pp-shoe-main"
               />
             </div>
           </div>
@@ -276,7 +259,7 @@ export default function ProductNew() {
             <svg className="pp-arc-svg" xmlns="http://www.w3.org/2000/svg" overflow="visible">
               {/*Shadow thick substrate */}
               <path
-                d="M 150 30 Q 60 280 150 530"
+                d="M 120 20 Q 40 230 120 440"
                 fill="none"
                 stroke="rgba(60,60,60,0.5)"
                 strokeWidth="18"
@@ -284,7 +267,7 @@ export default function ProductNew() {
               />
               {/* Main arc */}
               <path
-                d="M 150 30 Q 60 280 150 530"
+                d="M 120 20 Q 40 230 120 440"
                 fill="none"
                 stroke="rgba(140,140,140,0.6)"
                 strokeWidth="8"
@@ -292,7 +275,7 @@ export default function ProductNew() {
               />
               {/* Internal glare */}
               <path
-                d="M 150 30 Q 60 280 150 530"
+                d="M 120 20 Q 40 230 120 440"
                 fill="none"
                 stroke="rgba(255,255,255,0.12)"
                 strokeWidth="2"
@@ -303,15 +286,15 @@ export default function ProductNew() {
             {/* zipper */}
             {(() => {
               const t = colorIdx / (COLORS.length - 1);
-              const p0x=150, p0y=30, p1x=60, p1y=280, p2x=150, p2y=530;
+              const p0x=120, p0y=20, p1x=40, p1y=230, p2x=120, p2y=440;
               const bx=(1-t)*(1-t)*p0x+2*(1-t)*t*p1x+t*t*p2x;
               const by=(1-t)*(1-t)*p0y+2*(1-t)*t*p1y+t*t*p2y;
               // Card center
-              const cardCx = bx - 140 + ARC_OFFSETS[colorIdx].x + 65;
+              const cardCx = bx - 110 + ARC_OFFSETS[colorIdx].x + 65;
               const cardCy = by - 43 + ARC_OFFSETS[colorIdx].y + 43;
               // Right edge taking the turn into account
               const rad = (ARC_OFFSETS[colorIdx].rotate * Math.PI) / 180;
-              const rx = 65 * Math.cos(rad);
+              const rx = 35 * Math.cos(rad);
               const ry = 65 * Math.sin(rad);
               const zipperOffsetY = 0;
               return (
@@ -322,7 +305,7 @@ export default function ProductNew() {
             {/* Cards by curve*/}
             {COLORS.map((c, i) => {
               const t = i / (COLORS.length - 1);
-              const p0x=150, p0y=30, p1x=60, p1y=280, p2x=150, p2y=530;
+              const p0x=120, p0y=20, p1x=40, p1y=230, p2x=120, p2y=440;
               const bx=(1-t)*(1-t)*p0x+2*(1-t)*t*p1x+t*t*p2x;
               const by=(1-t)*(1-t)*p0y+2*(1-t)*t*p1y+t*t*p2y;
               const isActive = i === colorIdx;
@@ -330,7 +313,7 @@ export default function ProductNew() {
                 <div
                   key={c.id}
                   className={`pp-arc-item ${isActive ? 'active' : ''}`}
-                  style={{ left: bx - 140 + ARC_OFFSETS[i].x, top: by - 43 + ARC_OFFSETS[i].y, transform: `rotate(${ARC_OFFSETS[i].rotate}deg)` }}
+                  style={{ left: bx - 110 + ARC_OFFSETS[i].x, top: by - 43 + ARC_OFFSETS[i].y, transform: `rotate(${ARC_OFFSETS[i].rotate}deg)` }}
                   onClick={() => changeColor(i)}
                 >
                   <div
