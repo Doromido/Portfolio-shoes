@@ -6,6 +6,7 @@ import {
   selectWishlistIds,
   addToCart, setCartOpen,
 } from './store';
+import { useWishlist } from './hooks/useWishlist';
 import './App.css';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -45,7 +46,7 @@ const PRODUCTS = [
 
 function HeartIcon({ filled = false }) {
   return (
-    <svg viewBox="0 0 24 24" width="16" height="16"
+    <svg viewBox="0 0 24 24" width="14" height="14"
       stroke="currentColor" fill={filled ? 'currentColor' : 'none'} strokeWidth="2">
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
     </svg>
@@ -58,6 +59,7 @@ function BestSelling({ onAddToCart, offset, setOffset }) {
   const dispatch   = useDispatch();
   const wishIds    = useSelector(selectWishlistIds);
   const navigate   = useNavigate();
+  const handleToggleWishlist = useWishlist();
 
   const GAP    = 1.5;
   const maxOff = PRODUCTS.length - PER_PAGE;
@@ -78,7 +80,7 @@ function BestSelling({ onAddToCart, offset, setOffset }) {
           <div className="bs-nav">
             <button className={`bs-nav-btn ${canPrev ? '' : 'disabled'}`}
               onClick={prev} disabled={!canPrev}>
-              <svg viewBox="0 0 56 16" width="56" height="16" fill="none">
+              <svg viewBox="0 0 56 16" width="45" height="14" fill="none">
                 <line x1="54" y1="8" x2="2" y2="8" stroke="currentColor" strokeWidth="1.5"/>
                 <polyline points="10,2 2,8 10,14" stroke="currentColor" strokeWidth="1.5"
                   fill="none" strokeLinejoin="miter"/>
@@ -88,7 +90,7 @@ function BestSelling({ onAddToCart, offset, setOffset }) {
             <button className={`bs-nav-btn ${canNext ? '' : 'disabled'}`}
               onClick={next} disabled={!canNext}>
               <span>NEXT</span>
-              <svg viewBox="0 0 56 16" width="56" height="16" fill="none">
+              <svg viewBox="0 0 56 16" width="45" height="14" fill="none">
                 <line x1="2" y1="8" x2="54" y2="8" stroke="currentColor" strokeWidth="1.5"/>
                 <polyline points="46,2 54,8 46,14" stroke="currentColor" strokeWidth="1.5"
                   fill="none" strokeLinejoin="miter"/>
@@ -110,7 +112,7 @@ function BestSelling({ onAddToCart, offset, setOffset }) {
                   {p.badge && <span className="bs-badge">{p.badge}</span>}
                   <button
                     className={`bs-heart ${isLiked ? 'liked' : ''}`}
-                    onClick={(e) => { e.stopPropagation(); dispatch(toggleWishlist(p.id)); }}
+                    onClick={(e) => { e.stopPropagation(); handleToggleWishlist(p.id, e); }}
                   >
                     <HeartIcon filled={isLiked} />
                   </button>
@@ -177,19 +179,15 @@ function Categories() {
           <div
             key={cat.label}
             className={`cat-item ${cat.isSale ? 'cat-item--sale' : ''}`}
-            onClick={() => navigate(cat.path, { state: { scrollToTop: true } })}
+            onClick={() => navigate(cat.path)}
             style={{ cursor: 'pointer' }}
           >
             <img src={cat.img} alt={cat.label} className="cat-img"
               style={{ objectPosition: cat.pos }} />
-            <div className="cat-overlay" />
-            {cat.isSale && <div className="cat-sale-badge">-40%</div>}
-            <div className="cat-content">
+            <div className="cat-overlay">
+              <span className="cat-label">{cat.label}</span>
               <span className="cat-sub">{cat.sub}</span>
-              <h3 className="cat-label">{cat.label}</h3>
-              <div className="cat-line" />
             </div>
-            <div className="cat-hover-btn">EXPLORE →</div>
           </div>
         ))}
       </div>
@@ -198,16 +196,16 @@ function Categories() {
 }
 
 function HomePage() {
-  const navigate     = useNavigate();         
-  const dispatch     = useDispatch();
-  const location     = useLocation();
-  const wishlistIds  = useSelector(selectWishlistIds);
-  const [selectedColor, setSelectedColor] = useState(0);
-  const [toast, setToast]           = useState(null);
-  const [toastHiding, setToastHiding] = useState(false);
-  const [bsOffset, setBsOffset]     = useState(() => location.state?.bsOffset ?? 0);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const showToast = useCallback((p) => {
+  const [selectedColor, setSelectedColor] = useState(0);
+  const [toast,         setToast]         = useState(null);
+  const [toastHiding,   setToastHiding]   = useState(false);
+  const [bsOffset,      setBsOffset]      = useState(location.state?.bsOffset ?? 0);
+
+  const showToast = useCallback(p => {
     setToastHiding(false);
     setToast({ name: p.name, img: p.img });
     setTimeout(() => setToastHiding(true), 2500);
@@ -300,7 +298,6 @@ function HomePage() {
                 })}>
                 ADD TO CART
               </button>
-              {/* BUY NOW navigates to product detail page */}
               <button className="btn btn-secondary" onClick={handleBuyNow}>
                 BUY NOW
               </button>
@@ -348,20 +345,10 @@ function HomePage() {
   );
 }
 
-// Pages that manage their own scroll restoration via usePageState
-const CATALOGUE_PAGES = ['/women', '/men', '/kids', '/sale'];
-
 function ScrollToTop() {
   const { pathname, state } = useLocation();
 
   useEffect(() => {
-    // For catalogue pages: scroll to top only if navigated with scrollToTop flag (e.g. from Categories)
-    if (CATALOGUE_PAGES.includes(pathname)) {
-      if (state?.scrollToTop) window.scrollTo(0, 0);
-      return;
-    }
-
-    // If returning to home with a saved scroll position — restore it
     if (pathname === '/' && state?.scrollY != null) {
       requestAnimationFrame(() => {
         window.scrollTo({ top: state.scrollY, behavior: 'instant' });
