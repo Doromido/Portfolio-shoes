@@ -2,6 +2,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toggleWishlist, addToCart } from '../store';
+import { useWishlist } from '../hooks/useWishlist';
 import { WOMEN_PRODUCTS } from './W-products.js';
 import { MEN_PRODUCTS } from './M-products.js';
 import { KIDS_PRODUCTS } from './K-products.js';
@@ -38,13 +39,51 @@ const discountVal = p => {
   return m ? parseInt(m[1]) : 0;
 };
 
-// countdown (static decoration) 
+// countdown (real timer — 24h from first load) 
 function Countdown() {
+  const TARGET_KEY = 'jordan_sale_end';
+
+  const getTarget = () => {
+    const stored = localStorage.getItem(TARGET_KEY);
+    const now = Date.now();
+    if (stored) {
+      const end = parseInt(stored);
+      if (end > now) return end;
+    }
+    // Expired or missing — start fresh 24h cycle
+    const end = now + 24 * 60 * 60 * 1000;
+    localStorage.setItem(TARGET_KEY, String(end));
+    return end;
+  };
+
+  const calc = () => {
+    const diff = getTarget() - Date.now();
+    if (diff <= 0) {
+      localStorage.removeItem(TARGET_KEY); // triggers reset on next tick
+      return [['00', 'HRS'], ['00', 'MIN'], ['00', 'SEC']];
+    }
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    return [
+      [String(h).padStart(2, '0'), 'HRS'],
+      [String(m).padStart(2, '0'), 'MIN'],
+      [String(s).padStart(2, '0'), 'SEC'],
+    ];
+  };
+
+  const [units, setUnits] = React.useState(calc);
+
+  React.useEffect(() => {
+    const id = setInterval(() => setUnits(calc()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <div className="sp-countdown">
       <span className="sp-cd-label">FLASH SALE ENDS IN</span>
       <div className="sp-cd-units">
-        {[['23', 'HRS'], ['47', 'MIN'], ['12', 'SEC']].map(([n, l]) => (
+        {units.map(([n, l]) => (
           <div key={l} className="sp-cd-unit">
             <span className="sp-cd-num">{n}</span>
             <span className="sp-cd-sub">{l}</span>
@@ -60,6 +99,7 @@ function SaleCard({ p, onAddToCart, getScrollY }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const wishlistIds = useSelector(s => s.wishlist.ids);
+  const handleToggleWishlist = useWishlist();
   const liked = wishlistIds.includes(p.id);
   const discount = discountVal(p);
 
@@ -76,7 +116,7 @@ function SaleCard({ p, onAddToCart, getScrollY }) {
       )}
       <button
         className={`sp-heart ${liked ? 'liked' : ''}`}
-        onClick={e => { e.stopPropagation(); dispatch(toggleWishlist(p.id)); }}
+        onClick={e => { e.stopPropagation(); handleToggleWishlist(p.id, e); }}
       >
         <HeartIcon filled={liked} />
       </button>
