@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { addToCart, toggleWishlist, selectWishlistIds } from '../store';
+import { useWishlist } from '../hooks/useWishlist';
 import { KIDS_PRODUCTS, FILTERS } from './K-products';
 import './Kids.css';
 
@@ -226,10 +227,7 @@ export default function KidsPage() {
     showToast(p);
   };
 
-  const handleWishlist = (e, id) => {
-    e.stopPropagation();
-    dispatch(toggleWishlist(id));
-  };
+  const handleWishlist = useWishlist();
 
   const filtered = activeFilter === 'ALL'
     ? KIDS_PRODUCTS
@@ -365,7 +363,7 @@ export default function KidsPage() {
                   {p.badge && <span className="kp-badge">{p.badge}</span>}
                   <button
                     className={`kp-heart ${liked ? 'liked' : ''}`}
-                    onClick={(e) => handleWishlist(e, p.id)}
+                    onClick={(e) => handleWishlist(p.id, e)}
                   >
                     <HeartIcon filled={liked} />
                   </button>
@@ -409,7 +407,7 @@ export default function KidsPage() {
                   <img src={p.img} alt={p.name} />
                   <button
                     className={`kp-heart kp-pop-heart ${liked ? 'liked' : ''}`}
-                    onClick={(e) => handleWishlist(e, p.id)}
+                    onClick={(e) => handleWishlist(p.id, e)}
                   >
                     <HeartIcon filled={liked} />
                   </button>
