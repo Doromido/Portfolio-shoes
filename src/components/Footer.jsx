@@ -1,18 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import OrdersModal from './Orders-modal';
+import LoginModal from './Login-modal';
 import './Footer.css';
 
 export default function Footer() {
   const [email, setEmail]           = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [ordersOpen, setOrdersOpen] = useState(false);
+  const [loginOpen, setLoginOpen]   = useState(false);
+
+  const navigate = useNavigate();
+
+  const navTo = (path) => (e) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    navigate(path);
+  };
 
   // Reading the user directly from localStorage
   const [user, setUser] = useState(() => {
     try {
       const stored = localStorage.getItem('jordan_user');
-      return stored ? JSON.parse(stored) : null;
+      const parsed = stored ? JSON.parse(stored) : null;
+      return parsed?.loggedIn ? parsed : null;
     } catch { return null; }
   });
 
@@ -21,7 +32,8 @@ export default function Footer() {
     const onStorage = () => {
       try {
         const stored = localStorage.getItem('jordan_user');
-        setUser(stored ? JSON.parse(stored) : null);
+        const parsed = stored ? JSON.parse(stored) : null;
+        setUser(parsed?.loggedIn ? parsed : null);
       } catch { setUser(null); }
     };
     window.addEventListener('storage', onStorage);
@@ -42,8 +54,14 @@ export default function Footer() {
     if (user) {
       setOrdersOpen(true);
     } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setLoginOpen(true);
     }
+  };
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+    setLoginOpen(false);
+    setOrdersOpen(true);
   };
 
   return (
@@ -66,11 +84,11 @@ export default function Footer() {
         <div className="footer-nav-block">
           <span className="footer-col-title">COLLECTION</span>
           <ul className="footer-links">
-            <li><Link to="/">New Arrivals</Link></li>
-            <li><Link to="/men">Men</Link></li>
-            <li><Link to="/women">Women</Link></li>
-            <li><Link to="/kids">Kids</Link></li>
-            <li><Link to="/sale" className="footer-sale-link">Sale <span>↗</span></Link></li>
+            <li><Link to="/" onClick={navTo('/')}>New Arrivals</Link></li>
+            <li><Link to="/men" onClick={navTo('/men')}>Men</Link></li>
+            <li><Link to="/women" onClick={navTo('/women')}>Women</Link></li>
+            <li><Link to="/kids" onClick={navTo('/kids')}>Kids</Link></li>
+            <li><Link to="/sale" className="footer-sale-link" onClick={navTo('/sale')}>Sale <span>↗</span></Link></li>
           </ul>
         </div>
 
@@ -165,6 +183,12 @@ export default function Footer() {
       </div>
 
       {ordersOpen && <OrdersModal onClose={() => setOrdersOpen(false)} />}
+
+      <LoginModal
+        isOpen={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onLogin={handleLogin}
+      />
 
     </footer>
   );
