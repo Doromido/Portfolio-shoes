@@ -4,7 +4,7 @@
   background: #080808;
   color: white;
   font-family: 'Space Mono', monospace;
-  padding-top: 80px;
+  padding-top: 65px;
   position: relative;
 }
 
@@ -35,7 +35,7 @@
 /* Back button */
 .ppage-back {
   position: fixed;
-  top: 90px;
+  top: 80px;
   left: 2rem;
   z-index: 100;
   background: rgba(8,8,8,0.85);
@@ -60,7 +60,7 @@
 /* Layout */
 .ppage-layout {
   display: grid;
-  grid-template-columns: 58% 42%;
+  grid-template-columns: 58% 40%;
   min-height: calc(100vh - 80px);
 }
 
@@ -82,7 +82,7 @@
   bottom: 0.15em;
   left: -0.05em;
   font-family: 'Archivo Black', sans-serif;
-  font-size: clamp(10rem, 19vw, 16rem);
+  font-size: clamp(6rem, 16.2vw, 16rem);
   font-style: italic;
   color: rgba(255,255,255,0.025);
   letter-spacing: -0.04em;
@@ -115,13 +115,13 @@
 /* Wishlist button on image */
 .ppage-wish {
   position: absolute;
-  top: 2rem;
-  right: 2rem;
+  top: 1rem;
+  right: 1rem;
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.1);
   color: rgba(255,255,255,0.5);
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -145,8 +145,8 @@
   transform: translateY(20px) scale(0.96);
   transition: opacity 0.5s ease, transform 0.5s ease;
   width: 100%;
-  max-width: 850px;
-  margin-bottom: 8rem;
+  max-width: 600px;
+  margin-bottom: 9rem;
    margin-right: 2rem;
 }
 .ppage-img-wrap.loaded {
@@ -180,10 +180,10 @@
 
 /* RIGHT — INFO PANEL */
 .ppage-info-panel {
-  padding: 2rem 3.5rem 3rem;
+  padding: 1.2rem 2rem 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1.6rem;
+  gap: 1rem;
   overflow-y: auto;
   background: #080808;
 }
@@ -194,16 +194,16 @@
   font-size: 0.55rem;
   letter-spacing: 4px;
   color: rgba(255,255,255,0.25);
-  margin-bottom: 0.7rem;
+  margin-bottom: 0.3rem;
 }
 .ppage-name {
   font-family: 'Archivo Black', sans-serif;
-  font-size: clamp(1.6rem, 3vw, 2.6rem);
+  font-size: clamp(1.2rem, 2.2vw, 1.9rem);
   font-style: italic;
   letter-spacing: -0.03em;
   line-height: 1.05;
   color: white;
-  margin: 0 0 1.2rem;
+  margin: 0 0 0.6rem;
 }
 .ppage-price-row {
   display: flex;
@@ -242,6 +242,7 @@
 .ppage-divider {
   height: 1px;
   background: rgba(255,255,255,0.07);
+  
 }
 
 /* Section */
@@ -347,7 +348,7 @@
   gap: 0.5rem;
 }
 .ppage-size-btn {
-  width: 52px;
+  width: 44px;
   height: 44px;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.1);
@@ -376,7 +377,7 @@
 /* Description */
 .ppage-desc {
   font-size: 0.72rem;
-  line-height: 1.9;
+  line-height: 1.7;
   color: rgba(255,255,255,0.45);
   letter-spacing: 0.3px;
   margin: 0;
@@ -400,7 +401,7 @@
   padding: 1rem;
   cursor: pointer;
   transition: opacity 0.2s, box-shadow 0.3s, background 0.3s;
-  min-height: 54px;
+  min-height: 44px;
 }
 .ppage-btn-cart:hover:not(:disabled):not(.added) {
   opacity: 0.88;

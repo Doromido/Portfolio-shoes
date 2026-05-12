@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, toggleWishlist, selectWishlistIds } from '../store.jsx';
+import { useWishlist } from '../hooks/useWishlist';
 import { WOMEN_PRODUCTS } from './W-products.js';
 import { MEN_PRODUCTS } from './M-products.js';
 import { KIDS_PRODUCTS } from './K-products.js';
@@ -35,6 +36,7 @@ export default function ProductPage() {
   const location     = useLocation();
   const dispatch     = useDispatch();
   const wishIds      = useSelector(selectWishlistIds);
+  const handleToggleWishlist = useWishlist();
 
   const product = ALL_PRODUCTS.find(p => p.id === id)
     ?? (location.state?.fallbackProduct?.id === id ? location.state.fallbackProduct : null);
@@ -112,7 +114,7 @@ export default function ProductPage() {
 
           <button
             className={`ppage-wish ${isLiked ? 'liked' : ''}`}
-            onClick={() => dispatch(toggleWishlist(product.id))}
+            onClick={() => handleToggleWishlist(product.id)}
           >
             <svg viewBox="0 0 24 24" width="20" height="20"
               stroke="currentColor"
