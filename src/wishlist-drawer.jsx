@@ -66,6 +66,14 @@ export default function WishlistDrawer() {
   const [visible, setVisible] = useState(false);
   const [closing, setClosing] = useState(false);
 
+  // Check if user is logged in
+  const isLoggedIn = (() => {
+    try {
+      const raw = localStorage.getItem('jordan_user');
+      return raw ? !!JSON.parse(raw)?.loggedIn : false;
+    } catch { return false; }
+  })();
+
   // When store opens the drawer
   useEffect(() => {
     if (open) {
@@ -119,7 +127,17 @@ export default function WishlistDrawer() {
         <div className="wl-rule" />
 
         <div className="wl-list">
-          {items.length === 0 ? (
+          {!isLoggedIn ? (
+            <div className="wl-empty">
+              <svg viewBox="0 0 24 24" width="40" height="40" stroke="currentColor"
+                fill="none" strokeWidth="1.5">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <p>SIGN IN TO VIEW WISHLIST</p>
+              <span>Your saved items will appear here</span>
+            </div>
+          ) : items.length === 0 ? (
             <div className="wl-empty">
               <svg viewBox="0 0 24 24" width="40" height="40" stroke="currentColor"
                 fill="none" strokeWidth="1.5">
@@ -163,7 +181,7 @@ export default function WishlistDrawer() {
           ))}
         </div>
 
-        {items.length > 0 && (
+        {isLoggedIn && items.length > 0 && (
           <div className="wl-footer">
             <button className="wl-cart-all"
               onClick={() => items.forEach(p => handleAdd(p))}>
