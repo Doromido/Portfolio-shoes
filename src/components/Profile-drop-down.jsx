@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectActiveOrders } from '../store';
+import { selectActiveOrders, clearWishlist, clearCart, saveUserWishlist, saveUserCart, loadWishlist, loadUserWishlist, store } from '../store';
 import OrdersModal from './Orders-modal';
 import './Profile-drop-down.css';
 
@@ -28,10 +28,10 @@ function SettingsModal({ user, onClose, onSave }) {
 
   const handleSave = () => {
     setSaved(true);
-    const updated = { name, email };
     const stored = JSON.parse(localStorage.getItem('jordan_user') || '{}');
-    localStorage.setItem('jordan_user', JSON.stringify({ ...stored, ...updated }));
-    setTimeout(() => { onSave(updated); handleClose(); }, 900);
+    const updated = { ...stored, name, email };
+    localStorage.setItem('jordan_user', JSON.stringify(updated));
+    setTimeout(() => { onSave({ name, email }); handleClose(); }, 900);
   };
 
   const TABS = [
@@ -126,7 +126,27 @@ export default function ProfileDropdown({ user, onLogout }) {
   const [ordersOpen, setOrdersOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(user);
   const dropRef      = useRef(null);
+  const dispatch     = useDispatch();
   const activeOrders = useSelector(selectActiveOrders);
+
+  const handleLogout = () => {
+    setOpen(false);
+    try {
+      const raw = localStorage.getItem('jordan_user');
+      if (raw) {
+        const { email } = JSON.parse(raw);
+        if (email) {
+          const { wishlist, cart } = store.getState();
+          if (wishlist.ids.length > 0)  saveUserWishlist(email, wishlist.ids);
+          if (cart.items.length > 0)    saveUserCart(email, cart.items);
+        }
+      }
+    } catch { /* ignore */ }
+    localStorage.removeItem('jordan_user');
+    dispatch(clearWishlist());
+    dispatch(clearCart());
+    onLogout();
+  };
 
   useEffect(() => {
     const handler = (e) => {
@@ -206,7 +226,7 @@ export default function ProfileDropdown({ user, onLogout }) {
               ))}
             </ul>
             <div className="pd-divider" />
-            <button className="pd-logout" onClick={() => { setOpen(false); onLogout(); }}>
+            <button className="pd-logout" onClick={handleLogout}>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
                 <polyline points="16 17 21 12 16 7"/>
