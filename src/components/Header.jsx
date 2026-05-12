@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import './Header.css';
 import {
@@ -26,12 +26,26 @@ export default function Header({ onUserChange }) {
   const [user, setUser] = useState(() => {
     try {
       const stored = localStorage.getItem('jordan_user');
-      return stored ? JSON.parse(stored) : null;
+      const parsed = stored ? JSON.parse(stored) : null;
+      return parsed?.loggedIn ? parsed : null;
     } catch { return null; }
   });
 
   const location = useLocation();
+  const navigate  = useNavigate();
   const isActive = (path) => location.pathname === path;
+
+  React.useEffect(() => {
+    const handler = () => setLoginOpen(true);
+    window.addEventListener('jordan:openLogin', handler);
+    return () => window.removeEventListener('jordan:openLogin', handler);
+  }, []);
+
+  const navTo = (path) => (e) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    navigate(path);
+  };
 
   const handleLogin = (userData) => {
     setUser(userData);
@@ -40,7 +54,8 @@ export default function Header({ onUserChange }) {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('jordan_user');
+    const stored = JSON.parse(localStorage.getItem('jordan_user') || '{}');
+    localStorage.setItem('jordan_user', JSON.stringify({ ...stored, loggedIn: false }));
     setUser(null);
     onUserChange?.(null);
   };
@@ -56,11 +71,11 @@ export default function Header({ onUserChange }) {
         </div>
 
         <ul className="nav-links">
-          <li><Link to="/"      className={isActive('/')      ? 'active' : ''}>HOME</Link></li>
-          <li><Link to="/women" className={isActive('/women') ? 'active' : ''}>WOMEN</Link></li>
-          <li><Link to="/men"   className={isActive('/men')   ? 'active' : ''}>MEN</Link></li>
-          <li><Link to="/kids"  className={isActive('/kids')  ? 'active' : ''}>KIDS</Link></li>
-          <li><Link to="/sale"  className={isActive('/sale')  ? 'active' : ''}>SALE</Link></li>
+          <li><Link to="/"      className={isActive('/')      ? 'active' : ''} onClick={navTo('/')}>HOME</Link></li>
+          <li><Link to="/women" className={isActive('/women') ? 'active' : ''} onClick={navTo('/women')}>WOMEN</Link></li>
+          <li><Link to="/men"   className={isActive('/men')   ? 'active' : ''} onClick={navTo('/men')}>MEN</Link></li>
+          <li><Link to="/kids"  className={isActive('/kids')  ? 'active' : ''} onClick={navTo('/kids')}>KIDS</Link></li>
+          <li><Link to="/sale"  className={isActive('/sale')  ? 'active' : ''} onClick={navTo('/sale')}>SALE</Link></li>
         </ul>
 
         <div className="nav-icons">

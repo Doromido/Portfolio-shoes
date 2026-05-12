@@ -2,7 +2,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 3rem;
+  padding: 0.4rem 1.8rem;
   position: fixed;
   top: 0;
   left: 0;
@@ -26,7 +26,7 @@
 }
 
 .logo-section img {
-  height: 38px;
+  height: 29px;
   width: auto;
   display: block;
   filter: brightness(0) invert(1);
@@ -34,11 +34,11 @@
 
 .nav-links {
   display: flex;
-  gap: 4.5rem;
+  gap: 3rem;
   list-style: none;
   font-weight: 900;
   letter-spacing: 5px;
-  font-size: 1.15rem;
+  font-size: 1.0rem;
   transform: scaleY(0.85);
   transform-origin: center;
 }
@@ -99,7 +99,7 @@
 
 .nav-icons {
   display: flex;
-  gap: 1.8rem;
+  gap: 1.2rem;
   align-items: center;
   position: relative;
 }
@@ -110,11 +110,11 @@
   opacity: 0;
   overflow: hidden;
   transition: width 0.4s ease, opacity 0.3s ease;
-  margin-right: 1rem;
+  margin-right: 0.5rem;
 }
 
 .search-bar.active {
-  width: 350px;
+  width: 280px;
   opacity: 1;
 }
 
@@ -123,9 +123,9 @@
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: white;
-  padding: 0.6rem 1rem;
+  padding: 0.4rem 0.8rem;
   font-family: 'Space Mono', monospace;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   outline: none;
   border-radius: 4px;
   transition: all 0.3s;
@@ -160,8 +160,8 @@
 }
 
 .icon-btn svg {
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   stroke: currentColor;
   stroke-width: 2.5;
   fill: none;
@@ -175,8 +175,8 @@
 }
 
 .icon-btn img {
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   filter: brightness(0) invert(1);
   transition: none;
 }
@@ -186,8 +186,8 @@
 }
 
 .profile-icon {
-  width: 38px;
-  height: 38px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: white;
   display: flex;
