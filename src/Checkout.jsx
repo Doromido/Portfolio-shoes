@@ -301,15 +301,21 @@ export default function CheckoutPage() {
 
   const handlePlace = () => {
     const shipping = total >= 1000 ? 0 : delivery.delivery === 'nova' ? 1.7 : delivery.delivery === 'ukr' ? 1.1 : 0;
+    let userEmail = null;
+    try {
+      const raw = localStorage.getItem('jordan_user');
+      if (raw) userEmail = JSON.parse(raw)?.email?.toLowerCase() || null;
+    } catch { /* ignore */ }
     dispatch(placeOrder({
-      id:       orderNum,
-      num:      orderNum,
-      date:     new Date().toISOString(),
-      items:    items.map(i => ({ ...i })),
-      delivery: { ...delivery },
+      id:        orderNum,
+      num:       orderNum,
+      date:      new Date().toISOString(),
+      items:     items.map(i => ({ ...i })),
+      delivery:  { ...delivery },
       total,
       shipping,
-      status:   'active',
+      status:    'active',
+      userEmail,
     }));
     dispatch(clearCart());
     setStep(2);
