@@ -6,6 +6,7 @@ import {
   toggleWishlist,
   addToCart,
 } from '../store';
+import { useWishlist } from '../hooks/useWishlist';
 import './Women.css';
 
 // Namespace women product ids to avoid collisions with home products
@@ -25,6 +26,7 @@ export default function WomenPage() {
   const [toastHiding, setToastHiding] = useState(false);
   const dispatch = useDispatch();
   const wishlistIds = useSelector(state => state.wishlist.ids);
+  const handleToggleWishlist = useWishlist();
   const scrollRestored = useRef(false);
 
   // Restore scroll position when returning from product page
@@ -36,11 +38,6 @@ export default function WomenPage() {
       });
     }
   }, []);
-
-  const handleToggleWishlist = (e, id) => {
-    e.stopPropagation();
-    dispatch(toggleWishlist(id));
-  };
 
   const showToast = useCallback((p) => {
     setToastHiding(false);
@@ -157,7 +154,7 @@ export default function WomenPage() {
                   {p.badge && <span className="bs-badge">{p.badge}</span>}
                   <button
                     className={`bs-heart ${liked ? 'liked' : ''}`}
-                    onClick={(e) => handleToggleWishlist(e, p.id)}
+                    onClick={(e) => handleToggleWishlist(p.id, e)}
                     aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'}
                   >
                     <HeartIcon filled={liked} />
