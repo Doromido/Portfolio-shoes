@@ -6,6 +6,7 @@ import {
   toggleWishlist,
   addToCart,
 } from '../store';
+import { useWishlist } from '../hooks/useWishlist';
 import './Men.css';
 
 // Namespace men product ids to avoid collisions
@@ -26,8 +27,8 @@ export default function MenPage() {
   const [toastHiding, setToastHiding] = useState(false);
   const dispatch = useDispatch();
   const wishlistIds = useSelector(state => state.wishlist.ids);
+  const handleToggleWishlist = useWishlist();
 
-  // Restore scroll position when returning from product page
   React.useEffect(() => {
     if (location.state?.scrollY != null) {
       requestAnimationFrame(() => {
@@ -40,11 +41,6 @@ export default function MenPage() {
     navigate(`/product/${id}`, {
       state: { returnTo: '/men', scrollY: window.scrollY, activeFilter },
     });
-  };
-
-  const handleToggleWishlist = (e, id) => {
-    e.stopPropagation();
-    dispatch(toggleWishlist(id));
   };
 
   const showToast = useCallback((p) => {
@@ -166,7 +162,7 @@ export default function MenPage() {
                   onClick={() => goToProduct(p.id)}>                  {p.badge && <span className="bs-badge">{p.badge}</span>}
                   <button
                     className={`bs-heart ${liked ? 'liked' : ''}`}
-                    onClick={(e) => handleToggleWishlist(e, p.id)}
+                    onClick={(e) => handleToggleWishlist(p.id, e)}
                     aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'}
                   >
                     <HeartIcon filled={liked} />

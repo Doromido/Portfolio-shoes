@@ -127,6 +127,7 @@
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
+  padding-top: 7rem;
 }
 
 .mp-hero-right {
@@ -138,7 +139,7 @@
 
 .mp-hero-eyebrow {
   display: block;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   letter-spacing: 5px;
   color: var(--accent);
   margin-bottom: 1.5rem;
@@ -147,7 +148,7 @@
 
 .mp-hero-title {
   font-family: 'Archivo Black', sans-serif;
-  font-size: clamp(5rem, 14vw, 14rem);
+  font-size: clamp(4rem, 14vw, 13rem);
   line-height: 0.85;
   letter-spacing: -0.04em;
   margin-bottom: 2rem;
@@ -171,7 +172,7 @@
 }
 
 .mp-hero-desc {
-  font-size: 0.78rem;
+  font-size: 0.6rem;
   letter-spacing: 2px;
   color: rgba(255,255,255,0.45);
   line-height: 2;
@@ -210,8 +211,8 @@
 .mp-hero-stats {
   display: flex;
   align-items: center;
-  gap: 2rem;
-  padding: 2rem 2.5rem;
+  gap: 1.4rem;
+  padding: 1rem 1.5rem;
   border: 1px solid var(--border);
   background: rgba(255,255,255,0.02);
   backdrop-filter: blur(10px);
@@ -221,19 +222,19 @@
   z-index: 10;
 }
 
-.mp-stat { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+.mp-stat { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
 
 .mp-stat-num {
   font-family: 'Archivo Black', sans-serif;
-  font-size: 2.2rem;
+  font-size: 1.8rem;
   font-style: italic;
   color: var(--accent);
   line-height: 1;
   filter: drop-shadow(0 0 10px var(--glow));
 }
 
-.mp-stat-label { font-size: 0.55rem; letter-spacing: 3px; color: rgba(255,255,255,0.3); }
-.mp-stat-divider { width: 1px; height: 40px; background: rgba(255,255,255,0.1); }
+.mp-stat-label { font-size: 0.5rem; letter-spacing: 3px; color: rgba(255,255,255,0.3); }
+.mp-stat-divider { width: 1px; height: 32px; background: rgba(255,255,255,0.1); }
 
 /* EDITORIAL BANNER */
 .mp-editorial-banner {
@@ -284,7 +285,7 @@
 
 .mp-editorial-banner-tag {
   font-family: 'Space Mono', monospace;
-  font-size: 1rem;
+  font-size: 0.7rem;
   letter-spacing: 3px;
   padding: 0.45rem 1rem;
   border: 1px solid rgba(255,255,255,0.35);
@@ -297,7 +298,7 @@
 .mp-ticker {
   background: var(--accent);
   overflow: hidden;
-  padding: 0.9rem 0;
+  padding: 0.6rem 0;
   white-space: nowrap;
   position: relative;
   z-index: 5;
@@ -326,7 +327,7 @@
 
 /* PRODUCTS SECTION */
 .mp-products {
-  padding: 5rem 3rem;
+  padding: 2rem 5rem;
   background: #090909;
 }
 
@@ -401,8 +402,8 @@
 .mc-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  max-width: 1400px;
+  gap: 1rem;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -758,7 +759,7 @@
 }
 
 .mp-size-chip {
-  width: 44px; height: 44px;
+  width: 40px; height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -852,7 +853,7 @@
   border: 1px solid rgba(255,255,255,0.18);
   color: rgba(255,255,255,0.55);
   font-family: 'Space Mono', monospace;
-  font-size: 0.68rem;
+  font-size: 0.60rem;
   letter-spacing: 3px;
   padding: 0.95rem 1.8rem;
   cursor: pointer;
